@@ -1,0 +1,4 @@
+@import url("../Runtime/DebugMenu/StyleSheets/DebugMenuDefaultTheme.tss");
+@import url("SampleTheme2.uss");
+
+VisualElement {}

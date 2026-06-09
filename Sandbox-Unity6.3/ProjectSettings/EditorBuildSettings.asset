@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Sample/Scenes/Boot.unity
+    guid: 2d6fe61159b1c02429ed279296e59b04
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Sample/Scenes/Title.unity
+    guid: dd7f982ae3f49d340a7a24446e00d83e
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Sample/Scenes/Map.unity
+    guid: bb15a44b7f8022c4b99082426a566f6b
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Sample/Scenes/Battle.unity
+    guid: 991cb5fdabaa77249b74055bbb06eefd
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Sample/Scenes/GameOver.unity
+    guid: 84784f70eca6e244099b00aee6f12a5e
+  - enabled: 1
+    path: Assets/DebugUISample/Sample.unity
+    guid: 7148d001aa6b8e845b407694d98618c5
+  - enabled: 1
+    path: Assets/DebugUISample/DynamicDemo.unity
+    guid: a0502a031753b3d479a7e8dabbbf2fce
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Mock/Scenes/MockBoot.unity
+    guid: 8dc4a0be1d280274a88a6bcf2e39f9a0
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Mock/Scenes/MockTitle.unity
+    guid: b258d128090fc1c47a1f7b43b82aa801
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Mock/Scenes/MockBattle.unity
+    guid: f07f81a573657f1408091cd8800a0dde
+  - enabled: 1
+    path: Assets/ScreenManagementTest/Mock/Scenes/MockExplore.unity
+    guid: 7a9f48da9b1eb1d43997659c64d242d6
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 5ee5ad0fb1cfdcd4aa7d1003d3f3ff93, type: 2}
+  m_UseUCBPForAssetBundles: 0
