@@ -15,7 +15,7 @@
       "url": "https://package.openupm.com"
     },
     "com.kamahir0.lilja.asset-management": {
-      "version": "file:C:/Users/hrtkm/develop/unity/lilja/lilja-packages/lilja.asset-management",
+      "version": "file:../../lilja/lilja-packages/lilja.asset-management",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -23,25 +23,25 @@
       }
     },
     "com.kamahir0.lilja.debug-ui": {
-      "version": "file:../../../lilja/lilja-packages/lilja.debug-ui",
+      "version": "file:../../lilja/lilja-packages/lilja.debug-ui",
       "depth": 0,
       "source": "local",
       "dependencies": {}
     },
     "com.kamahir0.lilja.dev-kit": {
-      "version": "file:../../../lilja/lilja-packages/lilja.dev-kit",
+      "version": "file:../../lilja/lilja-packages/lilja.dev-kit",
       "depth": 0,
       "source": "local",
       "dependencies": {}
     },
     "com.kamahir0.lilja.editor-ex": {
-      "version": "file:../../../lilja/lilja-packages/lilja.editor-ex",
+      "version": "file:../../lilja/lilja-packages/lilja.editor-ex",
       "depth": 0,
       "source": "local",
       "dependencies": {}
     },
     "com.kamahir0.lilja.repository": {
-      "version": "file:../../../lilja/lilja-packages/lilja.repository",
+      "version": "file:../../lilja/lilja-packages/lilja.repository",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -49,7 +49,7 @@
       }
     },
     "com.kamahir0.lilja.screen-management": {
-      "version": "file:C:/Users/hrtkm/develop/unity/lilja/lilja-packages/lilja.screen-management",
+      "version": "file:../../lilja/lilja-packages/lilja.screen-management",
       "depth": 0,
       "source": "local",
       "dependencies": {
