@@ -1,23 +1,25 @@
-﻿/*
+/*
  * FancyScrollView (https://github.com/setchi/FancyScrollView)
  * Copyright (c) 2020 setchi
  * Licensed under MIT (https://github.com/setchi/FancyScrollView/blob/master/LICENSE)
  */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using EasingCore;
 
 namespace FancyScrollView
 {
     /// <summary>
-    /// スクロールビューを実装するための抽象基底クラス.
-    /// 無限スクロールおよびスナップに対応しています.
-    /// <see cref="FancyScrollView{TItemData, TContext}.Context"/> が不要な場合は
-    /// 代わりに <see cref="FancyScrollView{TItemData}"/> を使用します.
+    /// Core implementation that owns lifecycle, pooling, scroller wiring, and edit-mode preview.
+    /// Public scroll view types expose item-data oriented APIs on top of this class.
     /// </summary>
-    /// <typeparam name="TItemData">アイテムのデータ型.</typeparam>
+    /// <typeparam name="TCellData">Data type consumed by each pooled cell.</typeparam>
     /// <typeparam name="TContext"><see cref="Context"/> の型.</typeparam>
-    public abstract class FancyScrollView<TItemData, TContext> : FancyScrollViewBase where TContext : class, new()
+    [RequireComponent(typeof(Scroller))]
+    public abstract class FancyScrollViewCore<TCellData, TContext> : FancyScrollViewBase
+        where TContext : class, new()
     {
         /// <summary>
         /// セル同士の間隔.
@@ -46,7 +48,10 @@ namespace FancyScrollView
         /// </summary>
         [SerializeField] protected Transform cellContainer = default;
 
-        readonly List<FancyCell<TItemData, TContext>> pool = new List<FancyCell<TItemData, TContext>>();
+        readonly List<FancyCell<TCellData, TContext>> pool = new List<FancyCell<TCellData, TContext>>();
+        readonly IList<TCellData> emptyItems = new List<TCellData>();
+
+        Scroller cachedScroller;
 
         /// <summary>
         /// 初期化済みかどうか.
@@ -59,14 +64,19 @@ namespace FancyScrollView
         protected float currentPosition;
 
         /// <summary>
+        /// スクロール位置を制御する <see cref="FancyScrollView.Scroller"/> のインスタンス.
+        /// </summary>
+        protected Scroller Scroller => cachedScroller != null ? cachedScroller : (cachedScroller = GetComponent<Scroller>());
+
+        /// <summary>
         /// セルの Prefab.
         /// </summary>
-        protected abstract GameObject CellPrefab { get; }
+        protected abstract FancyCell<TCellData, TContext> CellPrefab { get; }
 
         /// <summary>
         /// アイテム一覧のデータ.
         /// </summary>
-        protected IList<TItemData> ItemsSource { get; set; } = new List<TItemData>();
+        protected IList<TCellData> ItemsSource { get; private set; } = new List<TCellData>();
 
         /// <summary>
         /// <typeparamref name="TContext"/> のインスタンス.
@@ -75,7 +85,7 @@ namespace FancyScrollView
         protected TContext Context { get; } = new TContext();
 
 #if UNITY_EDITOR
-        IList<TItemData> itemsSourceBeforePreview;
+        IList<TCellData> itemsSourceBeforePreview;
         bool initializedBeforePreview;
         bool loopBeforePreview;
         bool editorPreviewing;
@@ -93,47 +103,194 @@ namespace FancyScrollView
 #endif
 
         /// <summary>
-        /// 初期化を行います.
+        /// セルとスクロールビュー間で共有する context を設定します.
         /// </summary>
-        /// <remarks>
-        /// 最初にセルが生成される直前に呼び出されます.
-        /// </remarks>
-        protected virtual void Initialize() { }
+        /// <param name="context">共有 context.</param>
+        protected virtual void SetupContext(TContext context) { }
+
+        /// <summary>
+        /// セル生成直後に呼び出されます.
+        /// </summary>
+        /// <param name="cell">生成されたセル.</param>
+        protected virtual void OnCellCreated(FancyCell<TCellData, TContext> cell) { }
+
+        /// <summary>
+        /// <see cref="Scroller"/> の選択インデックスが変更された際に呼び出されます.
+        /// </summary>
+        /// <param name="index">選択インデックス.</param>
+        protected virtual void OnScrollerSelectionChanged(int index) { }
+
+        /// <summary>
+        /// <see cref="Scroller"/> に設定する総要素数.
+        /// </summary>
+        private protected virtual int ScrollerItemCount => ItemsSource.Count;
+
+        /// <summary>
+        /// 指定された item index が表すスクロール位置.
+        /// </summary>
+        /// <param name="itemIndex">アイテムのインデックス.</param>
+        /// <returns>スクロール位置.</returns>
+        private protected virtual float GetScrollPositionForItem(int itemIndex) => itemIndex;
+
+        /// <summary>
+        /// <see cref="Scroller"/> が扱うスクロール位置をこの view が扱う位置に変換します.
+        /// </summary>
+        /// <param name="position"><see cref="Scroller"/> が扱うスクロール位置.</param>
+        /// <returns>この view が扱うスクロール位置.</returns>
+        private protected virtual float ToFancyScrollViewPosition(float position) => position;
+
+        /// <summary>
+        /// この view が扱うスクロール位置を <see cref="Scroller"/> が扱う位置に変換します.
+        /// </summary>
+        /// <param name="position">この view が扱うスクロール位置.</param>
+        /// <param name="alignment">ビューポート内におけるセル位置の基準. 0f(先頭) ~ 1f(末尾).</param>
+        /// <returns><see cref="Scroller"/> が扱うスクロール位置.</returns>
+        private protected virtual float ToScrollerPosition(float position, float alignment = 0.5f) => position;
+
+        /// <summary>
+        /// ItemsSource が更新された直後に呼び出されます.
+        /// </summary>
+        /// <param name="items">更新後の items.</param>
+        private protected virtual void OnItemsSourceChanged(IList<TCellData> items) { }
+
+        /// <summary>
+        /// <see cref="Scroller.SetTotalCount(int)"/> の直後に呼び出されます.
+        /// </summary>
+        private protected virtual void OnScrollerItemCountChanged() { }
+
+        /// <summary>
+        /// レイアウト更新の直前に呼び出されます.
+        /// </summary>
+        private protected virtual void OnBeforeRefresh() { }
+
+        /// <summary>
+        /// セルの表示内容を再適用します.
+        /// </summary>
+        public void RefreshItems() => RefreshInternal(true);
+
+        /// <summary>
+        /// セルの表示内容を再適用せず、レイアウトだけを更新します.
+        /// </summary>
+        public void RefreshLayout() => RefreshInternal(false);
+
+        /// <summary>
+        /// 指定したアイテムの位置までジャンプします.
+        /// </summary>
+        /// <param name="itemIndex">アイテムのインデックス.</param>
+        /// <param name="alignment">ビューポート内におけるセル位置の基準. 0f(先頭) ~ 1f(末尾).</param>
+        public void JumpTo(int itemIndex, float alignment = 0.5f)
+        {
+            EnsureInitialized();
+            Scroller.Position = ToScrollerPosition(GetScrollPositionForItem(itemIndex), alignment);
+        }
+
+        /// <summary>
+        /// 指定したアイテムの位置まで移動します.
+        /// </summary>
+        /// <param name="itemIndex">アイテムのインデックス.</param>
+        /// <param name="duration">移動にかける秒数.</param>
+        /// <param name="alignment">ビューポート内におけるセル位置の基準. 0f(先頭) ~ 1f(末尾).</param>
+        /// <param name="onComplete">移動が完了した際に呼び出されるコールバック.</param>
+        public void ScrollTo(int itemIndex, float duration, float alignment = 0.5f, Action onComplete = null)
+        {
+            EnsureInitialized();
+            Scroller.ScrollTo(ToScrollerPosition(GetScrollPositionForItem(itemIndex), alignment), duration, onComplete);
+        }
+
+        /// <summary>
+        /// 指定したアイテムの位置まで移動します.
+        /// </summary>
+        /// <param name="itemIndex">アイテムのインデックス.</param>
+        /// <param name="duration">移動にかける秒数.</param>
+        /// <param name="easing">移動に使用するイージング.</param>
+        /// <param name="alignment">ビューポート内におけるセル位置の基準. 0f(先頭) ~ 1f(末尾).</param>
+        /// <param name="onComplete">移動が完了した際に呼び出されるコールバック.</param>
+        public void ScrollTo(int itemIndex, float duration, Ease easing, float alignment = 0.5f, Action onComplete = null)
+        {
+            EnsureInitialized();
+            Scroller.ScrollTo(ToScrollerPosition(GetScrollPositionForItem(itemIndex), alignment), duration, easing, onComplete);
+        }
 
         /// <summary>
         /// 渡されたアイテム一覧に基づいて表示内容を更新します.
         /// </summary>
         /// <param name="itemsSource">アイテム一覧.</param>
-        protected virtual void UpdateContents(IList<TItemData> itemsSource)
+        private protected void SetItemsCore(IList<TCellData> itemsSource)
         {
-            ItemsSource = itemsSource;
-            Refresh();
+            EnsureInitialized();
+
+            ItemsSource = itemsSource ?? emptyItems;
+            OnItemsSourceChanged(ItemsSource);
+
+            Scroller.SetTotalCount(Mathf.Max(0, ScrollerItemCount));
+            OnScrollerItemCountChanged();
+
+            RefreshItems();
         }
 
-        /// <summary>
-        /// セルのレイアウトを強制的に更新します.
-        /// </summary>
-        protected virtual void Relayout() => UpdatePositionInternal(currentPosition, false);
-
-        /// <summary>
-        /// セルのレイアウトと表示内容を強制的に更新します.
-        /// </summary>
-        protected virtual void Refresh() => UpdatePositionInternal(currentPosition, true);
-
-        /// <summary>
-        /// スクロール位置を更新します.
-        /// </summary>
-        /// <param name="position">スクロール位置.</param>
-        protected virtual void UpdatePosition(float position) => UpdatePositionInternal(position, false);
-
-        protected void UpdatePositionInternal(float position, bool forceRefresh)
+        void RefreshInternal(bool forceRefresh)
         {
-            if (!initialized)
+            EnsureInitialized();
+            OnBeforeRefresh();
+            UpdatePositionInternal(currentPosition, forceRefresh);
+        }
+
+        void EnsureInitialized()
+        {
+            if (initialized)
             {
-                Initialize();
-                initialized = true;
+                return;
             }
 
+            ValidateContainerAndScroller();
+            SetupContext(Context);
+            ValidateCellPrefab();
+            Scroller.OnValueChanged(OnScrollerValueChanged);
+            Scroller.OnSelectionChanged(OnScrollerSelectionChanged);
+            initialized = true;
+        }
+
+        void ValidateContainerAndScroller()
+        {
+            if (cellContainer == null)
+            {
+                throw new InvalidOperationException(string.Format(
+                    "{0} requires Cell Container.",
+                    GetType().Name));
+            }
+
+            if (Scroller == null)
+            {
+                throw new MissingComponentException(string.Format(
+                    "{0} requires a Scroller component on the same GameObject.",
+                    GetType().Name));
+            }
+        }
+
+        void ValidateCellPrefab()
+        {
+            if (CellPrefab == null)
+            {
+                throw new InvalidOperationException(string.Format(
+                    "{0} requires a cell prefab of type FancyCell<{1}, {2}>.",
+                    GetType().Name,
+                    typeof(TCellData).Name,
+                    typeof(TContext).Name));
+            }
+        }
+
+        void OnScrollerValueChanged(float position)
+        {
+            ApplyScrollerPosition(position);
+        }
+
+        private protected virtual void ApplyScrollerPosition(float position)
+        {
+            UpdatePositionInternal(ToFancyScrollViewPosition(position), false);
+        }
+
+        private protected void UpdatePositionInternal(float position, bool forceRefresh)
+        {
             currentPosition = position;
 
             var p = position - scrollOffset / cellInterval;
@@ -150,19 +307,10 @@ namespace FancyScrollView
 
         void ResizePool(float firstPosition)
         {
-            Debug.Assert(CellPrefab != null);
-            Debug.Assert(cellContainer != null);
-
             var addCount = Mathf.CeilToInt((1f - firstPosition) / cellInterval) - pool.Count;
             for (var i = 0; i < addCount; i++)
             {
-                var cell = Instantiate(CellPrefab, cellContainer).GetComponent<FancyCell<TItemData, TContext>>();
-                if (cell == null)
-                {
-                    throw new MissingComponentException(string.Format(
-                        "FancyCell<{0}, {1}> component not found in {2}.",
-                        typeof(TItemData).FullName, typeof(TContext).FullName, CellPrefab.name));
-                }
+                var cell = Instantiate(CellPrefab, cellContainer);
 
 #if UNITY_EDITOR
                 if (editorPreviewing)
@@ -173,6 +321,7 @@ namespace FancyScrollView
 
                 cell.SetContext(Context);
                 cell.Initialize();
+                OnCellCreated(cell);
 
 #if UNITY_EDITOR
                 if (editorPreviewing)
@@ -190,7 +339,7 @@ namespace FancyScrollView
         /// Destroys all pooled cells and resets initialization state.
         /// </summary>
         /// <param name="destroyImmediately">Use immediate destruction. This is required for edit-mode cleanup.</param>
-        protected void ClearCellPool(bool destroyImmediately)
+        private protected void ClearCellPool(bool destroyImmediately)
         {
             for (var i = 0; i < pool.Count; i++)
             {
@@ -262,16 +411,10 @@ namespace FancyScrollView
                 return "Preview is only available in Edit Mode.";
             }
 
-            if (!HasEditorPreviewDataSource())
+            var cellPrefabError = GetEditorPreviewCellPrefabError();
+            if (!string.IsNullOrEmpty(cellPrefabError))
             {
-                return string.Format(
-                    "Implement IFancyScrollPreviewDataSource<{0}> to provide preview data.",
-                    EditorPreviewItemDataTypeName);
-            }
-
-            if (!HasEditorPreviewCellPrefab())
-            {
-                return "Cell Prefab is not assigned.";
+                return cellPrefabError;
             }
 
             if (cellContainer == null)
@@ -281,10 +424,10 @@ namespace FancyScrollView
 
             if (GetEditorPreviewItemCount() <= 0)
             {
-                return "PreviewItemCount must be greater than 0.";
+                return "Preview Item Count must be greater than 0.";
             }
 
-            return null;
+            return GetAdditionalEditorPreviewError();
         }
 
         internal override float GetEditorPreviewMaxPosition() => Mathf.Max(0, GetEditorPreviewItemCount() - 1);
@@ -305,8 +448,7 @@ namespace FancyScrollView
             editorPreviewItemCount = -1;
             editorPreviewing = true;
 
-            (this as IFancyScrollPreviewLifecycle)?.OnBeginPreview();
-            OnEditorPreviewBegin();
+            OnPreviewBegin();
 
             ClearCellPool(true);
             ClearEditorPreviewObjects();
@@ -346,7 +488,7 @@ namespace FancyScrollView
             ClearCellPool(true);
             ClearEditorPreviewObjects();
 
-            ItemsSource = itemsSourceBeforePreview ?? new List<TItemData>();
+            ItemsSource = itemsSourceBeforePreview ?? emptyItems;
             initialized = initializedBeforePreview && pool.Count > 0;
             loop = loopBeforePreview;
             cellInterval = cellIntervalBeforePreview;
@@ -355,47 +497,44 @@ namespace FancyScrollView
             editorPreviewItemCount = -1;
             editorPreviewing = false;
 
-            OnEditorPreviewEnd();
-            (this as IFancyScrollPreviewLifecycle)?.OnEndPreview();
-        }
-
-        protected virtual string EditorPreviewItemDataTypeName => typeof(TItemData).Name;
-
-        protected virtual bool HasEditorPreviewDataSource() => this is IFancyScrollPreviewDataSource<TItemData>;
-
-        protected virtual bool HasEditorPreviewCellPrefab() => CellPrefab != null;
-
-        protected virtual int GetEditorPreviewItemCount()
-        {
-            return this is IFancyScrollPreviewDataSource<TItemData> source
-                ? Mathf.Max(0, source.PreviewItemCount)
-                : 0;
-        }
-
-        protected virtual IList<TItemData> CreateEditorPreviewItems(int itemCount)
-        {
-            var source = (IFancyScrollPreviewDataSource<TItemData>)this;
-            var items = new List<TItemData>(itemCount);
-            for (var i = 0; i < itemCount; i++)
+            if (Scroller != null)
             {
-                items.Add(source.CreatePreviewItem(new FancyScrollPreviewItemContext(i, itemCount)));
+                Scroller.SetTotalCount(Mathf.Max(0, ScrollerItemCount));
             }
 
-            return items;
+            OnPreviewEnd();
         }
 
-        protected virtual void ApplyEditorPreviewItems(IList<TItemData> items) => UpdateContents(items);
+        protected virtual string EditorPreviewCellDataTypeName => typeof(TCellData).Name;
 
-        protected virtual void ApplyEditorPreviewPosition(float position, bool forceRefresh)
+        private protected virtual string GetEditorPreviewCellPrefabError()
+        {
+            return CellPrefab == null
+                ? string.Format(
+                    "Assign a cell prefab of type FancyCell<{0}, {1}>.",
+                    EditorPreviewCellDataTypeName,
+                    typeof(TContext).Name)
+                : null;
+        }
+
+        protected abstract int GetEditorPreviewItemCount();
+
+        protected abstract IList<TCellData> CreateEditorPreviewItems(int itemCount);
+
+        private protected virtual string GetAdditionalEditorPreviewError() => null;
+
+        private protected virtual void ApplyEditorPreviewItems(IList<TCellData> items) => SetItemsCore(items);
+
+        private protected virtual void ApplyEditorPreviewPosition(float position, bool forceRefresh)
         {
             UpdatePositionInternal(position, forceRefresh);
         }
 
-        protected virtual void OnEditorPreviewBegin() { }
+        protected virtual void OnPreviewBegin() { }
 
-        protected virtual void OnEditorPreviewEnd() { }
+        protected virtual void OnPreviewEnd() { }
 
-        protected void MarkEditorPreviewObject(GameObject gameObject)
+        private protected void MarkEditorPreviewObject(GameObject gameObject)
         {
             if (gameObject == null)
             {
@@ -468,8 +607,53 @@ namespace FancyScrollView
                 cachedCellInterval = cellInterval;
                 cachedScrollOffset = scrollOffset;
 
-                UpdatePosition(currentPosition);
+                RefreshLayout();
             }
+        }
+#endif
+    }
+
+    /// <summary>
+    /// スクロールビューを実装するための抽象基底クラス.
+    /// 無限スクロールおよびスナップに対応しています.
+    /// <see cref="FancyScrollView{TItemData, TContext}.Context"/> が不要な場合は
+    /// 代わりに <see cref="FancyScrollView{TItemData}"/> を使用します.
+    /// </summary>
+    /// <typeparam name="TItemData">アイテムのデータ型.</typeparam>
+    /// <typeparam name="TContext"><see cref="Context"/> の型.</typeparam>
+    public abstract class FancyScrollView<TItemData, TContext> : FancyScrollViewCore<TItemData, TContext>
+        where TContext : class, new()
+    {
+        /// <summary>
+        /// Edit-mode preview item count.
+        /// </summary>
+        protected virtual int PreviewItemCount => EditorPreviewItemCount;
+
+        /// <summary>
+        /// 渡されたアイテム一覧に基づいて表示内容を更新します.
+        /// </summary>
+        /// <param name="items">アイテム一覧.</param>
+        public void SetItems(IList<TItemData> items) => SetItemsCore(items);
+
+        /// <summary>
+        /// Edit-mode preview 用の item data を作成します.
+        /// </summary>
+        /// <param name="context">Preview item context.</param>
+        /// <returns>Preview item data.</returns>
+        protected abstract TItemData CreatePreviewItem(FancyScrollPreviewItemContext context);
+
+#if UNITY_EDITOR
+        protected sealed override int GetEditorPreviewItemCount() => Mathf.Max(0, PreviewItemCount);
+
+        protected sealed override IList<TItemData> CreateEditorPreviewItems(int itemCount)
+        {
+            var items = new List<TItemData>(itemCount);
+            for (var i = 0; i < itemCount; i++)
+            {
+                items.Add(CreatePreviewItem(new FancyScrollPreviewItemContext(i, itemCount)));
+            }
+
+            return items;
         }
 #endif
     }

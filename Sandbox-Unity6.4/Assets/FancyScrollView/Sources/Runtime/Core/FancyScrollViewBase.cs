@@ -13,7 +13,7 @@ namespace FancyScrollView
     /// </summary>
     public abstract class FancyScrollViewBase : MonoBehaviour
     {
-        [SerializeField, Min(1)] int editorPreviewItemCount = 5;
+        [SerializeField, Min(1)] int editorPreviewItemCount = 30;
 
         /// <summary>
         /// Item count used by the built-in editor preview.

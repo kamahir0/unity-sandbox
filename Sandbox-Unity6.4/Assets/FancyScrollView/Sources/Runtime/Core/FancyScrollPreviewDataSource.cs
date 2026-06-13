@@ -22,24 +22,4 @@ namespace FancyScrollView
         public int Count { get; }
     }
 
-    /// <summary>
-    /// Implement this on a scroll view to provide edit-mode preview data.
-    /// </summary>
-    /// <typeparam name="TItemData">Item data type.</typeparam>
-    public interface IFancyScrollPreviewDataSource<TItemData>
-    {
-        int PreviewItemCount { get; }
-
-        TItemData CreatePreviewItem(FancyScrollPreviewItemContext context);
-    }
-
-    /// <summary>
-    /// Optional lifecycle callbacks for edit-mode preview.
-    /// </summary>
-    public interface IFancyScrollPreviewLifecycle
-    {
-        void OnBeginPreview();
-
-        void OnEndPreview();
-    }
 }

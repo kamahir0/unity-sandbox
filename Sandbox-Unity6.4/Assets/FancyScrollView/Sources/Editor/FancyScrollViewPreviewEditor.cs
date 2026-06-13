@@ -18,6 +18,7 @@ namespace FancyScrollView
 
         bool previewEnabled;
         bool previewPlaying;
+        bool previewReverse;
         double previousTime;
         float previewPosition;
         float previewSpeed = 1f;
@@ -75,6 +76,13 @@ namespace FancyScrollView
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 EditorGUILayout.LabelField("Preview", EditorStyles.boldLabel);
+
+                if (Application.isPlaying)
+                {
+                    StopPreview(true);
+                    EditorGUILayout.HelpBox("Preview is only available in Edit Mode.", MessageType.Info);
+                    return;
+                }
 
                 EditorGUI.BeginChangeCheck();
                 var enabled = EditorGUILayout.Toggle("Enable", previewEnabled);
@@ -142,7 +150,12 @@ namespace FancyScrollView
 
                 using (new EditorGUI.DisabledScope(!previewEnabled))
                 {
-                    previewSpeed = EditorGUILayout.Slider("Speed", previewSpeed, 0.1f, 20f);
+                    previewSpeed = EditorGUILayout.Slider("Speed", previewSpeed, 0.1f, 10f);
+                }
+
+                using (new EditorGUI.DisabledScope(!previewEnabled))
+                {
+                    previewReverse = EditorGUILayout.Toggle("Reverse", previewReverse);
                 }
 
                 using (new EditorGUILayout.HorizontalScope())
@@ -215,10 +228,15 @@ namespace FancyScrollView
             var maxPosition = view.GetEditorPreviewMaxPosition();
             if (maxPosition > 0f)
             {
-                previewPosition += deltaTime * previewSpeed;
+                previewPosition += deltaTime * previewSpeed * (previewReverse ? -1f : 1f);
                 while (previewPosition > maxPosition)
                 {
                     previewPosition -= maxPosition;
+                }
+
+                while (previewPosition < 0f)
+                {
+                    previewPosition += maxPosition;
                 }
             }
             else
@@ -236,6 +254,11 @@ namespace FancyScrollView
             {
                 StopPreview(true);
             }
+            else if (state == PlayModeStateChange.EnteredPlayMode)
+            {
+                StopPreview(true);
+                Repaint();
+            }
         }
 
         void OnPrefabStageClosing(PrefabStage prefabStage)
@@ -248,6 +271,13 @@ namespace FancyScrollView
             var view = View;
             if (view == null)
             {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                StopPreview(true);
+                previewException = "Preview is only available in Edit Mode.";
                 return;
             }
 
@@ -274,6 +304,19 @@ namespace FancyScrollView
             var view = View;
             if (!previewEnabled || view == null)
             {
+                return false;
+            }
+
+            if (Application.isPlaying)
+            {
+                previewException = "Preview is only available in Edit Mode.";
+                previewPlaying = false;
+                previewEnabled = false;
+                if (view.EditorPreviewing)
+                {
+                    view.EndEditorPreview();
+                }
+
                 return false;
             }
 
