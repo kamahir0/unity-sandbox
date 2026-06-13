@@ -1,4 +1,4 @@
-/*
+﻿/*
  * FancyScrollView (https://github.com/setchi/FancyScrollView)
  * Copyright (c) 2020 setchi
  * Licensed under MIT (https://github.com/setchi/FancyScrollView/blob/master/LICENSE)
@@ -7,7 +7,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace FancyScrollView.Example01
+namespace Lilja.FancyScrollView.Example01
 {
     class ScrollView : FancyScrollView<ItemData>
     {

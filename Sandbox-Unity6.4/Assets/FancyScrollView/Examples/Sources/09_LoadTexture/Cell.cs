@@ -7,9 +7,8 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using EasingCore;
 
-namespace FancyScrollView.Example09
+namespace Lilja.FancyScrollView.Example09
 {
     class Cell : FancyCell<ItemData>
     {

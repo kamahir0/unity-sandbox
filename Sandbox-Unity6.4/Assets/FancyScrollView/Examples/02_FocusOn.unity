@@ -43,7 +43,7 @@ RenderSettings:
 LightmapSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 13
-  m_BakeOnSceneLoad: 1
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: 3f76d3cbcb8761346bdfffe22f717db4, type: 2}
+  m_LightingDataAsset: {fileID: 112000000, guid: 68075e84670142e42bce73ef1513dc74, type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: ac4d8fe5614b89449a56e5423c0297ac, type: 2}
 --- !u!196 &4
 NavMeshSettings:
@@ -229,6 +229,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1747360886316832959, guid: a5f73e63b9cf5418ca91edef13ad6686, type: 3}
   m_PrefabInstance: {fileID: 71128191}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &71128193 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1747360885129001868, guid: a5f73e63b9cf5418ca91edef13ad6686, type: 3}
+  m_PrefabInstance: {fileID: 71128191}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a4db7a114972834c8e4117be1d82ba3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &557640968
 GameObject:
   m_ObjectHideFlags: 0
@@ -738,6 +749,7 @@ MonoBehaviour:
   loop: 0
   cellContainer: {fileID: 560159448}
   cellPrefab: {fileID: 114212530390307856, guid: d432cd8a052c847b0a9234295575210d, type: 3}
+  scroller: {fileID: 1492537699}
 --- !u!114 &1492537699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -747,7 +759,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1492537695}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0fc27b5ba4a92854da8315ba70a7ded4, type: 3}
+  m_Script: {fileID: 11500000, guid: 2f9fcc90d88fd9b4bb7a3ff9866381d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   viewport: {fileID: 1492537696}
@@ -763,7 +775,7 @@ MonoBehaviour:
     Duration: 0.35
     Easing: 24
   draggable: 1
-  scrollbar: {fileID: 0}
+  scrollbar: {fileID: 71128193}
 --- !u!114 &1492537701
 MonoBehaviour:
   m_ObjectHideFlags: 0

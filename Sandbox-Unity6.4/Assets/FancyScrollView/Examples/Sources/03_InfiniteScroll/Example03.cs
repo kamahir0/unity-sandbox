@@ -7,7 +7,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace FancyScrollView.Example03
+namespace Lilja.FancyScrollView.Example03
 {
     class Example03 : MonoBehaviour
     {

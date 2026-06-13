@@ -7,7 +7,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FancyScrollView.Example05
+namespace Lilja.FancyScrollView.Example05
 {
     [ExecuteInEditMode]
     class Cell : FancyCell<ItemData, Context>

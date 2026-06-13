@@ -7,7 +7,7 @@
 using System;
 using UnityEngine;
 
-namespace FancyScrollView.Example04
+namespace Lilja.FancyScrollView.Example04
 {
     class Context
     {

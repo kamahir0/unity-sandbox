@@ -7,7 +7,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FancyScrollView.Example01
+namespace Lilja.FancyScrollView.Example01
 {
     class Cell : FancyCell<ItemData>
     {

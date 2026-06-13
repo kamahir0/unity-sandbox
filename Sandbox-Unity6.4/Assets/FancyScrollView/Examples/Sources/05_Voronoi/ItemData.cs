@@ -4,7 +4,7 @@
  * Licensed under MIT (https://github.com/setchi/FancyScrollView/blob/master/LICENSE)
  */
 
-namespace FancyScrollView.Example05
+namespace Lilja.FancyScrollView.Example05
 {
     class ItemData
     {

@@ -6,7 +6,7 @@
 
 using UnityEngine;
 
-namespace FancyScrollView.Example09
+namespace Lilja.FancyScrollView.Example09
 {
     class Example09 : MonoBehaviour
     {

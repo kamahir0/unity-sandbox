@@ -1,4 +1,4 @@
-/*
+﻿/*
  * FancyScrollView (https://github.com/setchi/FancyScrollView)
  * Copyright (c) 2020 setchi
  * Licensed under MIT (https://github.com/setchi/FancyScrollView/blob/master/LICENSE)
@@ -7,7 +7,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace FancyScrollView.Example06
+namespace Lilja.FancyScrollView.Example06
 {
     class Tab : FancyCell<ItemData, Context>
     {
@@ -48,8 +48,8 @@ namespace FancyScrollView.Example06
             animator.speed = 0;
         }
 
-        // GameObject が非アクティブになると Animator がリセットされてしまうため
-        // 現在位置を保持しておいて OnEnable のタイミングで現在位置を再設定します
+        // GameObject 縺碁撼繧｢繧ｯ繝・ぅ繝悶↓縺ｪ繧九→ Animator 縺後Μ繧ｻ繝・ヨ縺輔ｌ縺ｦ縺励∪縺・◆繧・
+        // 迴ｾ蝨ｨ菴咲ｽｮ繧剃ｿ晄戟縺励※縺翫＞縺ｦ OnEnable 縺ｮ繧ｿ繧､繝溘Φ繧ｰ縺ｧ迴ｾ蝨ｨ菴咲ｽｮ繧貞・險ｭ螳壹＠縺ｾ縺・
         float currentPosition = 0;
 
         void OnEnable() => UpdatePosition(currentPosition);

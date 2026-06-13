@@ -58,6 +58,12 @@
       "source": "local",
       "dependencies": {}
     },
+    "com.kamahir0.lilja.fancy-scroll-view": {
+      "version": "file:../../../lilja/lilja-packages/lilja.fancy-scroll-view",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.kamahir0.lilja.repository": {
       "version": "file:../../lilja/lilja-packages/lilja.repository",
       "depth": 0,

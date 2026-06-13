@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace FancyScrollView.Example09
+namespace Lilja.FancyScrollView.Example09
 {
     static class TextureLoader
     {

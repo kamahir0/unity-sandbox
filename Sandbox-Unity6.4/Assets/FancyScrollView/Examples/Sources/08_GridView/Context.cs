@@ -6,7 +6,7 @@
 
 using System;
 
-namespace FancyScrollView.Example08
+namespace Lilja.FancyScrollView.Example08
 {
     class Context : FancyGridViewContext
     {

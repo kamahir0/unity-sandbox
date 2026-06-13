@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace FancyScrollView.Example05
+namespace Lilja.FancyScrollView.Example05
 {
     class Background : MonoBehaviour, IPointerClickHandler
     {
