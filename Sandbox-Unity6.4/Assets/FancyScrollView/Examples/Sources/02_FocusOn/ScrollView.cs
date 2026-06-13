@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using EasingCore;
 
@@ -13,19 +14,24 @@ namespace FancyScrollView.Example02
     class ScrollView : FancyScrollView<ItemData, Context>
     {
         [SerializeField] Cell cellPrefab = default;
+        [SerializeField] Scroller scroller = default;
 
         Action<int> onSelectionChanged;
 
         protected override FancyCell<ItemData, Context> CellPrefab => cellPrefab;
 
-        protected override void SetupContext(Context context)
+        protected override void Initialize()
         {
-            context.OnCellClicked = SelectCell;
+            base.Initialize();
+            Context.OnCellClicked = SelectCell;
+            scroller.OnValueChanged(UpdatePosition);
+            scroller.OnSelectionChanged(UpdateSelection);
         }
 
-        protected override void OnScrollerSelectionChanged(int index)
+        public override void SetItems(IList<ItemData> items)
         {
-            UpdateSelection(index);
+            base.SetItems(items);
+            scroller.SetTotalCount(items.Count);
         }
 
         void UpdateSelection(int index)
@@ -64,7 +70,7 @@ namespace FancyScrollView.Example02
             }
 
             UpdateSelection(index);
-            ScrollTo(index, 0.35f, Ease.OutCubic);
+            scroller.ScrollTo(index, 0.35f, Ease.OutCubic);
         }
 
         protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)

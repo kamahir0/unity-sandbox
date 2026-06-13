@@ -17,7 +17,6 @@ namespace FancyScrollView
     /// </summary>
     /// <typeparam name="TCellData">Data type consumed by each pooled cell.</typeparam>
     /// <typeparam name="TContext"><see cref="Context"/> の型.</typeparam>
-    [RequireComponent(typeof(Scroller))]
     public abstract class FancyScrollViewCore<TCellData, TContext> : FancyScrollViewBase
         where TContext : class, new()
     {
@@ -51,8 +50,6 @@ namespace FancyScrollView
         readonly List<FancyCell<TCellData, TContext>> pool = new List<FancyCell<TCellData, TContext>>();
         readonly IList<TCellData> emptyItems = new List<TCellData>();
 
-        Scroller cachedScroller;
-
         /// <summary>
         /// 初期化済みかどうか.
         /// </summary>
@@ -62,11 +59,6 @@ namespace FancyScrollView
         /// 現在のスクロール位置.
         /// </summary>
         protected float currentPosition;
-
-        /// <summary>
-        /// スクロール位置を制御する <see cref="FancyScrollView.Scroller"/> のインスタンス.
-        /// </summary>
-        protected Scroller Scroller => cachedScroller != null ? cachedScroller : (cachedScroller = GetComponent<Scroller>());
 
         /// <summary>
         /// セルの Prefab.
@@ -153,10 +145,7 @@ namespace FancyScrollView
         /// <param name="items">更新後の items.</param>
         private protected virtual void OnItemsSourceChanged(IList<TCellData> items) { }
 
-        /// <summary>
-        /// <see cref="Scroller.SetTotalCount(int)"/> の直後に呼び出されます.
-        /// </summary>
-        private protected virtual void OnScrollerItemCountChanged() { }
+
 
         /// <summary>
         /// レイアウト更新の直前に呼び出されます.
@@ -173,43 +162,7 @@ namespace FancyScrollView
         /// </summary>
         public void RefreshLayout() => RefreshInternal(false);
 
-        /// <summary>
-        /// 指定したアイテムの位置までジャンプします.
-        /// </summary>
-        /// <param name="itemIndex">アイテムのインデックス.</param>
-        /// <param name="alignment">ビューポート内におけるセル位置の基準. 0f(先頭) ~ 1f(末尾).</param>
-        public void JumpTo(int itemIndex, float alignment = 0.5f)
-        {
-            EnsureInitialized();
-            Scroller.Position = ToScrollerPosition(GetScrollPositionForItem(itemIndex), alignment);
-        }
 
-        /// <summary>
-        /// 指定したアイテムの位置まで移動します.
-        /// </summary>
-        /// <param name="itemIndex">アイテムのインデックス.</param>
-        /// <param name="duration">移動にかける秒数.</param>
-        /// <param name="alignment">ビューポート内におけるセル位置の基準. 0f(先頭) ~ 1f(末尾).</param>
-        /// <param name="onComplete">移動が完了した際に呼び出されるコールバック.</param>
-        public void ScrollTo(int itemIndex, float duration, float alignment = 0.5f, Action onComplete = null)
-        {
-            EnsureInitialized();
-            Scroller.ScrollTo(ToScrollerPosition(GetScrollPositionForItem(itemIndex), alignment), duration, onComplete);
-        }
-
-        /// <summary>
-        /// 指定したアイテムの位置まで移動します.
-        /// </summary>
-        /// <param name="itemIndex">アイテムのインデックス.</param>
-        /// <param name="duration">移動にかける秒数.</param>
-        /// <param name="easing">移動に使用するイージング.</param>
-        /// <param name="alignment">ビューポート内におけるセル位置の基準. 0f(先頭) ~ 1f(末尾).</param>
-        /// <param name="onComplete">移動が完了した際に呼び出されるコールバック.</param>
-        public void ScrollTo(int itemIndex, float duration, Ease easing, float alignment = 0.5f, Action onComplete = null)
-        {
-            EnsureInitialized();
-            Scroller.ScrollTo(ToScrollerPosition(GetScrollPositionForItem(itemIndex), alignment), duration, easing, onComplete);
-        }
 
         /// <summary>
         /// 渡されたアイテム一覧に基づいて表示内容を更新します.
@@ -222,9 +175,6 @@ namespace FancyScrollView
             ItemsSource = itemsSource ?? emptyItems;
             OnItemsSourceChanged(ItemsSource);
 
-            Scroller.SetTotalCount(Mathf.Max(0, ScrollerItemCount));
-            OnScrollerItemCountChanged();
-
             RefreshItems();
         }
 
@@ -235,22 +185,22 @@ namespace FancyScrollView
             UpdatePositionInternal(currentPosition, forceRefresh);
         }
 
-        void EnsureInitialized()
+        protected void EnsureInitialized()
         {
             if (initialized)
             {
                 return;
             }
 
-            ValidateContainerAndScroller();
+            ValidateContainer();
             SetupContext(Context);
             ValidateCellPrefab();
-            Scroller.OnValueChanged(OnScrollerValueChanged);
-            Scroller.OnSelectionChanged(OnScrollerSelectionChanged);
+            Initialize();
+            InitializeCore();
             initialized = true;
         }
 
-        void ValidateContainerAndScroller()
+        void ValidateContainer()
         {
             if (cellContainer == null)
             {
@@ -258,14 +208,17 @@ namespace FancyScrollView
                     "{0} requires Cell Container.",
                     GetType().Name));
             }
-
-            if (Scroller == null)
-            {
-                throw new MissingComponentException(string.Format(
-                    "{0} requires a Scroller component on the same GameObject.",
-                    GetType().Name));
-            }
         }
+
+        /// <summary>
+        /// 初期化を行います.
+        /// </summary>
+        protected virtual void Initialize() { }
+
+        /// <summary>
+        /// 追加の初期化処理を行います.
+        /// </summary>
+        protected virtual void InitializeCore() { }
 
         void ValidateCellPrefab()
         {
@@ -279,15 +232,7 @@ namespace FancyScrollView
             }
         }
 
-        void OnScrollerValueChanged(float position)
-        {
-            ApplyScrollerPosition(position);
-        }
 
-        private protected virtual void ApplyScrollerPosition(float position)
-        {
-            UpdatePositionInternal(ToFancyScrollViewPosition(position), false);
-        }
 
         private protected void UpdatePositionInternal(float position, bool forceRefresh)
         {
@@ -303,6 +248,15 @@ namespace FancyScrollView
             }
 
             UpdateCells(firstPosition, firstIndex, forceRefresh);
+        }
+
+        /// <summary>
+        /// スクロール位置を更新します.
+        /// </summary>
+        /// <param name="position">スクロール位置.</param>
+        protected virtual void UpdatePosition(float position)
+        {
+            UpdatePositionInternal(position, false);
         }
 
         void ResizePool(float firstPosition)
@@ -497,11 +451,6 @@ namespace FancyScrollView
             editorPreviewItemCount = -1;
             editorPreviewing = false;
 
-            if (Scroller != null)
-            {
-                Scroller.SetTotalCount(Mathf.Max(0, ScrollerItemCount));
-            }
-
             OnPreviewEnd();
         }
 
@@ -633,7 +582,7 @@ namespace FancyScrollView
         /// 渡されたアイテム一覧に基づいて表示内容を更新します.
         /// </summary>
         /// <param name="items">アイテム一覧.</param>
-        public void SetItems(IList<TItemData> items) => SetItemsCore(items);
+        public virtual void SetItems(IList<TItemData> items) => SetItemsCore(items);
 
         /// <summary>
         /// Edit-mode preview 用の item data を作成します.

@@ -44,16 +44,6 @@ namespace FancyScrollView
 
         FancyCell<TItemData[], TContext> cellGroupTemplate;
 
-        /// <summary>
-        /// グリッド内で表示する単体セルの Prefab.
-        /// </summary>
-        protected abstract FancyCell<TItemData, TContext> CellTemplate { get; }
-
-        /// <summary>
-        /// Grid view が内部で使用する非 generic のセルグループ型.
-        /// </summary>
-        protected abstract Type CellGroupType { get; }
-
         /// <inheritdoc/>
         protected sealed override FancyCell<TItemData[], TContext> CellPrefab => cellGroupTemplate;
 
@@ -89,60 +79,50 @@ namespace FancyScrollView
         /// <returns>Preview item data.</returns>
         protected abstract TItemData CreatePreviewItem(FancyScrollPreviewItemContext context);
 
+        /// <summary>
+        /// 最初にセルが生成される直前に呼び出されます.
+        /// <see cref="Setup{TGroup}(FancyCell{TItemData, TContext})"/> メソッドを使用してセルテンプレートのセットアップを行ってください.
+        /// </summary>
+        protected abstract void SetupCellTemplate();
+
+        /// <summary>
+        /// セルテンプレートのセットアップを行います.
+        /// </summary>
+        /// <param name="cellTemplate">セルのテンプレート.</param>
+        /// <typeparam name="TGroup">セルグループの型.</typeparam>
+        protected virtual void Setup<TGroup>(FancyCell<TItemData, TContext> cellTemplate)
+            where TGroup : FancyCell<TItemData[], TContext>
+        {
+            if (cellTemplate == null)
+            {
+                throw new InvalidOperationException("Cell template is not assigned.");
+            }
+
+            Context.CellTemplate = cellTemplate.gameObject;
+
+            cellGroupTemplate = new GameObject("Group").AddComponent<TGroup>();
+            cellGroupTemplate.transform.SetParent(cellContainer, false);
+            cellGroupTemplate.SetVisible(false);
+
+#if UNITY_EDITOR
+            if (IsEditorPreviewing)
+            {
+                MarkEditorPreviewObject(cellGroupTemplate.gameObject);
+            }
+#endif
+        }
+
         /// <inheritdoc/>
         protected sealed override void SetupScrollRectContext(TContext context)
         {
-            if (CellTemplate == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    "{0} requires a cell template of type FancyCell<{1}, {2}>.",
-                    GetType().Name,
-                    typeof(TItemData).Name,
-                    typeof(TContext).Name));
-            }
-
             context.ScrollDirection = Scroller.ScrollDirection;
             context.GetGroupCount = () => Mathf.Max(1, startAxisCellCount);
             context.GetStartAxisSpacing = () => startAxisSpacing;
             context.GetCellSize = () => Scroller.ScrollDirection == ScrollDirection.Horizontal
                 ? cellSize.y
                 : cellSize.x;
-            context.CellTemplate = CellTemplate.gameObject;
 
-            ValidateCellGroupType();
-
-            if (cellGroupTemplate == null)
-            {
-                cellGroupTemplate = (FancyCell<TItemData[], TContext>)new GameObject("Group").AddComponent(CellGroupType);
-                cellGroupTemplate.transform.SetParent(cellContainer, false);
-                cellGroupTemplate.SetVisible(false);
-
-#if UNITY_EDITOR
-                if (IsEditorPreviewing)
-                {
-                    MarkEditorPreviewObject(cellGroupTemplate.gameObject);
-                }
-#endif
-            }
-        }
-
-        void ValidateCellGroupType()
-        {
-            if (CellGroupType == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    "{0} requires a non-generic CellGroup type.",
-                    GetType().Name));
-            }
-
-            if (!typeof(FancyCell<TItemData[], TContext>).IsAssignableFrom(CellGroupType))
-            {
-                throw new InvalidOperationException(string.Format(
-                    "{0}.CellGroupType must inherit FancyCell<{1}[], {2}>.",
-                    GetType().Name,
-                    typeof(TItemData).Name,
-                    typeof(TContext).Name));
-            }
+            SetupCellTemplate();
         }
 
         /// <inheritdoc/>
@@ -170,27 +150,6 @@ namespace FancyScrollView
 
         private protected override string GetEditorPreviewCellPrefabError()
         {
-            if (CellTemplate == null)
-            {
-                return string.Format(
-                    "Assign a cell template of type FancyCell<{0}, {1}>.",
-                    typeof(TItemData).Name,
-                    typeof(TContext).Name);
-            }
-
-            if (CellGroupType == null)
-            {
-                return "Assign a non-generic CellGroup type.";
-            }
-
-            if (!typeof(FancyCell<TItemData[], TContext>).IsAssignableFrom(CellGroupType))
-            {
-                return string.Format(
-                    "CellGroupType must inherit FancyCell<{0}[], {1}>.",
-                    typeof(TItemData).Name,
-                    typeof(TContext).Name);
-            }
-
             return null;
         }
 

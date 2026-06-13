@@ -16,8 +16,7 @@ namespace FancyScrollView.Example08
 
         [SerializeField] Cell cellPrefab = default;
 
-        protected override FancyCell<ItemData, Context> CellTemplate => cellPrefab;
-        protected override Type CellGroupType => typeof(CellGroup);
+        protected override void SetupCellTemplate() => Setup<CellGroup>(cellPrefab);
 
         public float PaddingTop
         {

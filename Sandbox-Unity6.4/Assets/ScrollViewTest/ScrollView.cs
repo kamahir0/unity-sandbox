@@ -16,7 +16,7 @@ namespace ScrollViewTest
         // Properties for editor setup script access
         public Scroller TestScroller
         {
-            get => Scroller;
+            get => GetComponent<Scroller>();
             set { }
         }
 
