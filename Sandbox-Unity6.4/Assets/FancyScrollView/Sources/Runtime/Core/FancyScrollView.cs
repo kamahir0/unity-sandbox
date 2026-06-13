@@ -84,7 +84,7 @@ namespace FancyScrollView
         float cellIntervalBeforePreview;
         float currentPositionBeforePreview;
         float scrollOffsetBeforePreview;
-        int editorPreviewItemCount = -1;
+        int cachedEditorPreviewItemCount = -1;
 
         internal override bool EditorPreviewing => editorPreviewing;
 
@@ -399,7 +399,7 @@ namespace FancyScrollView
             cellIntervalBeforePreview = cellInterval;
             currentPositionBeforePreview = currentPosition;
             scrollOffsetBeforePreview = scrollOffset;
-            editorPreviewItemCount = -1;
+            cachedEditorPreviewItemCount = -1;
             editorPreviewing = true;
 
             OnPreviewBegin();
@@ -422,9 +422,9 @@ namespace FancyScrollView
             }
 
             var itemCount = GetEditorPreviewItemCount();
-            if (forceRefresh || itemCount != editorPreviewItemCount)
+            if (forceRefresh || itemCount != cachedEditorPreviewItemCount)
             {
-                editorPreviewItemCount = itemCount;
+                cachedEditorPreviewItemCount = itemCount;
                 ApplyEditorPreviewItems(CreateEditorPreviewItems(itemCount));
             }
 
@@ -448,7 +448,7 @@ namespace FancyScrollView
             cellInterval = cellIntervalBeforePreview;
             currentPosition = currentPositionBeforePreview;
             scrollOffset = scrollOffsetBeforePreview;
-            editorPreviewItemCount = -1;
+            cachedEditorPreviewItemCount = -1;
             editorPreviewing = false;
 
             OnPreviewEnd();
