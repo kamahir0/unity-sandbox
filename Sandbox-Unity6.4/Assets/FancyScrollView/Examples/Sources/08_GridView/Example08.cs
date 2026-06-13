@@ -93,7 +93,7 @@ namespace FancyScrollView.Example08
                 .Select(i => new ItemData(i))
                 .ToArray();
 
-            gridView.UpdateContents(items);
+            gridView.SetItems(items);
             SelectCell();
         }
     }

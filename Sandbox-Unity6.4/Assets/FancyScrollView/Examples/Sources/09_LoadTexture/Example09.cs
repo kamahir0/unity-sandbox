@@ -68,7 +68,7 @@ namespace FancyScrollView.Example09
 
         void Start()
         {
-            scrollView.UpdateData(itemData);
+            scrollView.SetItems(itemData);
         }
     }
 }

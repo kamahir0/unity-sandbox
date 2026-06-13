@@ -27,7 +27,7 @@ namespace FancyScrollView.Example05
                 .Select(i => new ItemData($"Cell {i}"))
                 .ToList();
 
-            scrollView.UpdateData(items);
+            scrollView.SetItems(items);
             scrollView.UpdateSelection(10);
             scrollView.JumpTo(10);
         }

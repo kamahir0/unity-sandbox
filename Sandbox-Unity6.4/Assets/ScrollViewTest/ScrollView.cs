@@ -3,31 +3,27 @@
  */
 
 using UnityEngine;
-using System.Collections.Generic;
 using FancyScrollView;
 
 namespace ScrollViewTest
 {
-    public class ScrollView : FancyScrollView<ItemData>, IFancyScrollPreviewDataSource<ItemData>
+    public class ScrollView : FancyScrollView<ItemData>
     {
-        [SerializeField] Scroller scroller = default;
-        [SerializeField] GameObject cellPrefab = default;
+        [SerializeField] Cell cellPrefab = default;
 
-        protected override GameObject CellPrefab => cellPrefab;
-
-        public int PreviewItemCount => EditorPreviewItemCount;
+        protected override FancyCell<ItemData, NullContext> CellPrefab => cellPrefab;
 
         // Properties for editor setup script access
         public Scroller TestScroller
         {
-            get => scroller;
-            set => scroller = value;
+            get => Scroller;
+            set { }
         }
 
         public GameObject TestCellPrefab
         {
-            get => cellPrefab;
-            set => cellPrefab = value;
+            get => cellPrefab != null ? cellPrefab.gameObject : null;
+            set => cellPrefab = value != null ? value.GetComponent<Cell>() : null;
         }
 
         public Transform TestCellContainer
@@ -36,25 +32,7 @@ namespace ScrollViewTest
             set => cellContainer = value;
         }
 
-        protected override void Initialize()
-        {
-            base.Initialize();
-            if (scroller != null)
-            {
-                scroller.OnValueChanged(UpdatePosition);
-            }
-        }
-
-        public void UpdateData(IList<ItemData> items)
-        {
-            UpdateContents(items);
-            if (scroller != null)
-            {
-                scroller.SetTotalCount(items.Count);
-            }
-        }
-
-        public ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
         {
             return new ItemData(string.Format("Preview Item {0:00}", context.Index + 1));
         }

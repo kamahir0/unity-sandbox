@@ -26,7 +26,7 @@ namespace FancyScrollView.Example06
                 .Select(i => new ItemData($"Tab {i}"))
                 .ToList();
 
-            scrollView.UpdateData(items);
+            scrollView.SetItems(items);
             scrollView.SelectCell(0);
         }
 

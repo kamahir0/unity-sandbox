@@ -637,7 +637,7 @@ MonoBehaviour:
   loop: 1
   cellContainer: {fileID: 82167581}
   scroller: {fileID: 1492537699}
-  cellPrefab: {fileID: 1901728338085442, guid: 34e1fd87ab6fa4ea9948dd561298519f, type: 3}
+  cellPrefab: {fileID: 7944036280670936764, guid: 34e1fd87ab6fa4ea9948dd561298519f, type: 3}
 --- !u!114 &1492537699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -647,7 +647,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1492537695}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f0e995f494626a4f878eedbded37c8d, type: 3}
+  m_Script: {fileID: 11500000, guid: 0fc27b5ba4a92854da8315ba70a7ded4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   viewport: {fileID: 1492537696}

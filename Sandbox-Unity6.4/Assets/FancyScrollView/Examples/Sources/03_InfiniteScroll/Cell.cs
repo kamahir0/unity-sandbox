@@ -23,7 +23,7 @@ namespace FancyScrollView.Example03
             public static readonly int Scroll = Animator.StringToHash("scroll");
         }
 
-        void Start()
+        public override void Initialize()
         {
             button.onClick.AddListener(() => Context.OnCellClicked?.Invoke(Index));
         }
@@ -46,6 +46,12 @@ namespace FancyScrollView.Example03
             if (animator.isActiveAndEnabled)
             {
                 animator.Play(AnimatorHash.Scroll, -1, position);
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    animator.Update(0f);
+                }
+#endif
             }
 
             animator.speed = 0;

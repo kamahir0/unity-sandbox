@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using EasingCore;
 
@@ -13,21 +12,20 @@ namespace FancyScrollView.Example06
 {
     class ScrollView : FancyScrollView<ItemData, Context>
     {
-        [SerializeField] Scroller scroller = default;
-        [SerializeField] GameObject cellPrefab = default;
+        [SerializeField] Tab cellPrefab = default;
 
         Action<int, MovementDirection> onSelectionChanged;
 
-        protected override GameObject CellPrefab => cellPrefab;
+        protected override FancyCell<ItemData, Context> CellPrefab => cellPrefab;
 
-        protected override void Initialize()
+        protected override void SetupContext(Context context)
         {
-            base.Initialize();
+            context.OnCellClicked = SelectCell;
+        }
 
-            Context.OnCellClicked = SelectCell;
-
-            scroller.OnValueChanged(UpdatePosition);
-            scroller.OnSelectionChanged(UpdateSelection);
+        protected override void OnScrollerSelectionChanged(int index)
+        {
+            UpdateSelection(index);
         }
 
         void UpdateSelection(int index)
@@ -37,18 +35,12 @@ namespace FancyScrollView.Example06
                 return;
             }
 
-            var direction = scroller.GetMovementDirection(Context.SelectedIndex, index);
+            var direction = Scroller.GetMovementDirection(Context.SelectedIndex, index);
 
             Context.SelectedIndex = index;
-            Refresh();
+            RefreshItems();
 
             onSelectionChanged?.Invoke(index, direction);
-        }
-
-        public void UpdateData(IList<ItemData> items)
-        {
-            UpdateContents(items);
-            scroller.SetTotalCount(items.Count);
         }
 
         public void OnSelectionChanged(Action<int, MovementDirection> callback)
@@ -73,7 +65,12 @@ namespace FancyScrollView.Example06
                 return;
             }
 
-            scroller.ScrollTo(index, 0.35f, Ease.OutCubic);
+            ScrollTo(index, 0.35f, Ease.OutCubic);
+        }
+
+        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        {
+            return new ItemData(string.Format("Preview Tab {0:00}", context.Index));
         }
     }
 }

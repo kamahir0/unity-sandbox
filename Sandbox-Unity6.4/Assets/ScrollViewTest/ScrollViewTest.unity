@@ -430,13 +430,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7983017b975d72242b5afa9dbe2f1c7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScrollViewTest.ScrollView
-  editorPreviewItemCount: 5
+  editorPreviewItemCount: 30
   cellInterval: 0.126
   scrollOffset: 0.5
   loop: 0
   cellContainer: {fileID: 785698553}
   scroller: {fileID: 813481727}
-  cellPrefab: {fileID: 8051696771469657556, guid: c2e60ead14678884c9979943d3585db5, type: 3}
+  cellPrefab: {fileID: 3265198744885799903, guid: c2e60ead14678884c9979943d3585db5, type: 3}
 --- !u!114 &813481725
 MonoBehaviour:
   m_ObjectHideFlags: 0

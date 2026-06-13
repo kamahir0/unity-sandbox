@@ -31,6 +31,12 @@ namespace FancyScrollView.Example01
             if (animator.isActiveAndEnabled)
             {
                 animator.Play(AnimatorHash.Scroll, -1, position);
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    animator.Update(0f);
+                }
+#endif
             }
 
             animator.speed = 0;

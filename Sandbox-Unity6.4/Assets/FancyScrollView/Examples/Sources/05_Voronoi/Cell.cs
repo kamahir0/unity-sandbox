@@ -51,8 +51,10 @@ namespace FancyScrollView.Example05
 
         void LateUpdate()
         {
-            image.rectTransform.localPosition = position + GetFluctuation();
+            ApplyImagePosition();
         }
+
+        void ApplyImagePosition() => image.rectTransform.localPosition = position + GetFluctuation();
 
         Vector3 GetFluctuation()
         {
@@ -74,6 +76,13 @@ namespace FancyScrollView.Example05
             if (scrollAnimator.isActiveAndEnabled)
             {
                 scrollAnimator.Play(AnimatorHash.Scroll, -1, position);
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    scrollAnimator.Update(0f);
+                    ApplyImagePosition();
+                }
+#endif
             }
 
             scrollAnimator.speed = 0;

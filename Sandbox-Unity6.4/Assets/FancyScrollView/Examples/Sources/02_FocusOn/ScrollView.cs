@@ -1,11 +1,10 @@
-﻿/*
+/*
  * FancyScrollView (https://github.com/setchi/FancyScrollView)
  * Copyright (c) 2020 setchi
  * Licensed under MIT (https://github.com/setchi/FancyScrollView/blob/master/LICENSE)
  */
 
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using EasingCore;
 
@@ -13,21 +12,20 @@ namespace FancyScrollView.Example02
 {
     class ScrollView : FancyScrollView<ItemData, Context>
     {
-        [SerializeField] Scroller scroller = default;
-        [SerializeField] GameObject cellPrefab = default;
+        [SerializeField] Cell cellPrefab = default;
 
         Action<int> onSelectionChanged;
 
-        protected override GameObject CellPrefab => cellPrefab;
+        protected override FancyCell<ItemData, Context> CellPrefab => cellPrefab;
 
-        protected override void Initialize()
+        protected override void SetupContext(Context context)
         {
-            base.Initialize();
+            context.OnCellClicked = SelectCell;
+        }
 
-            Context.OnCellClicked = SelectCell;
-
-            scroller.OnValueChanged(UpdatePosition);
-            scroller.OnSelectionChanged(UpdateSelection);
+        protected override void OnScrollerSelectionChanged(int index)
+        {
+            UpdateSelection(index);
         }
 
         void UpdateSelection(int index)
@@ -38,15 +36,9 @@ namespace FancyScrollView.Example02
             }
 
             Context.SelectedIndex = index;
-            Refresh();
+            RefreshItems();
 
             onSelectionChanged?.Invoke(index);
-        }
-
-        public void UpdateData(IList<ItemData> items)
-        {
-            UpdateContents(items);
-            scroller.SetTotalCount(items.Count);
         }
 
         public void OnSelectionChanged(Action<int> callback)
@@ -72,7 +64,12 @@ namespace FancyScrollView.Example02
             }
 
             UpdateSelection(index);
-            scroller.ScrollTo(index, 0.35f, Ease.OutCubic);
+            ScrollTo(index, 0.35f, Ease.OutCubic);
+        }
+
+        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        {
+            return new ItemData(string.Format("Preview Cell {0:00}", context.Index));
         }
     }
 }

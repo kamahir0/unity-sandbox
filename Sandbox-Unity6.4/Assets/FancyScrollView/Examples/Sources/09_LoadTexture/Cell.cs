@@ -28,15 +28,18 @@ namespace FancyScrollView.Example09
             data = itemData;
             image.texture = null;
 
-            TextureLoader.Load(itemData.Url, result =>
+            if (!string.IsNullOrEmpty(itemData.Url))
             {
-                if (image == null || result.Url != data.Url)
+                TextureLoader.Load(itemData.Url, result =>
                 {
-                    return;
-                }
+                    if (image == null || result.Url != data.Url)
+                    {
+                        return;
+                    }
 
-                image.texture = result.Texture;
-            });
+                    image.texture = result.Texture;
+                });
+            }
 
             title.text = itemData.Title;
             description.text = itemData.Description;

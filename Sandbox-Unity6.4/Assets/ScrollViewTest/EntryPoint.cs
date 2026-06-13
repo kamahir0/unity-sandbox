@@ -16,7 +16,7 @@ namespace ScrollViewTest
         {
             if (scrollView == null)
             {
-                scrollView = FindFirstObjectByType<ScrollView>();
+                scrollView = FindAnyObjectByType<ScrollView>();
             }
 
             if (scrollView != null)
@@ -26,7 +26,7 @@ namespace ScrollViewTest
                 {
                     items.Add(new ItemData($"Item {i:D2}"));
                 }
-                scrollView.UpdateData(items);
+                scrollView.SetItems(items);
             }
             else
             {

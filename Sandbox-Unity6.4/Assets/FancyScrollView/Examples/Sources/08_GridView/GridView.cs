@@ -1,4 +1,4 @@
-﻿/*
+/*
  * FancyScrollView (https://github.com/setchi/FancyScrollView)
  * Copyright (c) 2020 setchi
  * Licensed under MIT (https://github.com/setchi/FancyScrollView/blob/master/LICENSE)
@@ -16,7 +16,8 @@ namespace FancyScrollView.Example08
 
         [SerializeField] Cell cellPrefab = default;
 
-        protected override void SetupCellTemplate() => Setup<CellGroup>(cellPrefab);
+        protected override FancyCell<ItemData, Context> CellTemplate => cellPrefab;
+        protected override Type CellGroupType => typeof(CellGroup);
 
         public float PaddingTop
         {
@@ -24,7 +25,7 @@ namespace FancyScrollView.Example08
             set
             {
                 paddingHead = value;
-                Relayout();
+                RefreshLayout();
             }
         }
 
@@ -34,7 +35,7 @@ namespace FancyScrollView.Example08
             set
             {
                 paddingTail = value;
-                Relayout();
+                RefreshLayout();
             }
         }
 
@@ -44,7 +45,7 @@ namespace FancyScrollView.Example08
             set
             {
                 spacing = value;
-                Relayout();
+                RefreshLayout();
             }
         }
 
@@ -54,7 +55,7 @@ namespace FancyScrollView.Example08
             set
             {
                 startAxisSpacing = value;
-                Relayout();
+                RefreshLayout();
             }
         }
 
@@ -66,7 +67,7 @@ namespace FancyScrollView.Example08
             }
 
             Context.SelectedIndex = index;
-            Refresh();
+            RefreshItems();
         }
 
         public void OnCellClicked(Action<int> callback)
@@ -77,13 +78,13 @@ namespace FancyScrollView.Example08
         public void ScrollTo(int index, float duration, Ease easing, Alignment alignment = Alignment.Middle)
         {
             UpdateSelection(index);
-            ScrollTo(index, duration, easing, GetAlignment(alignment));
+            base.ScrollTo(index, duration, easing, GetAlignment(alignment));
         }
 
         public void JumpTo(int index, Alignment alignment = Alignment.Middle)
         {
             UpdateSelection(index);
-            JumpTo(index, GetAlignment(alignment));
+            base.JumpTo(index, GetAlignment(alignment));
         }
 
         float GetAlignment(Alignment alignment)
@@ -95,6 +96,11 @@ namespace FancyScrollView.Example08
                 case Alignment.Lower: return 1.0f;
                 default: return GetAlignment(Alignment.Middle);
             }
+        }
+
+        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        {
+            return new ItemData(context.Index);
         }
     }
 }

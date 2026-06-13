@@ -85,7 +85,7 @@ namespace FancyScrollView.Example07
                 .Select(i => new ItemData($"Cell {i}"))
                 .ToArray();
 
-            scrollView.UpdateData(items);
+            scrollView.SetItems(items);
             SelectCell();
         }
     }

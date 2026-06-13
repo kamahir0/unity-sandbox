@@ -24,7 +24,7 @@ namespace FancyScrollView.Example09
             static Loader instance;
 
             public static Loader Instance => instance ??
-                (instance = FindObjectOfType<Loader>() ??
+                (instance = FindAnyObjectByType<Loader>() ??
                     new GameObject(typeof(TextureLoader).Name).AddComponent<Loader>());
 
             public void Load(string url, Action<(string Url, Texture Texture)> onSuccess)
@@ -48,7 +48,7 @@ namespace FancyScrollView.Example09
                 {
                     yield return request.SendWebRequest();
 
-                    if (request.isNetworkError)
+                    if (request.result == UnityWebRequest.Result.ConnectionError)
                     {
                         Debug.LogErrorFormat("Error: {0}", request.error);
                         yield break;
