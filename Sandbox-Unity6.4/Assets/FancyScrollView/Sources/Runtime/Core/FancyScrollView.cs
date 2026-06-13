@@ -17,7 +17,7 @@ namespace FancyScrollView
     /// </summary>
     /// <typeparam name="TItemData">アイテムのデータ型.</typeparam>
     /// <typeparam name="TContext"><see cref="Context"/> の型.</typeparam>
-    public abstract class FancyScrollView<TItemData, TContext> : MonoBehaviour where TContext : class, new()
+    public abstract class FancyScrollView<TItemData, TContext> : FancyScrollViewBase where TContext : class, new()
     {
         /// <summary>
         /// セル同士の間隔.
@@ -46,7 +46,7 @@ namespace FancyScrollView
         /// </summary>
         [SerializeField] protected Transform cellContainer = default;
 
-        readonly IList<FancyCell<TItemData, TContext>> pool = new List<FancyCell<TItemData, TContext>>();
+        readonly List<FancyCell<TItemData, TContext>> pool = new List<FancyCell<TItemData, TContext>>();
 
         /// <summary>
         /// 初期化済みかどうか.
@@ -74,6 +74,24 @@ namespace FancyScrollView
         /// </summary>
         protected TContext Context { get; } = new TContext();
 
+#if UNITY_EDITOR
+        IList<TItemData> itemsSourceBeforePreview;
+        bool initializedBeforePreview;
+        bool loopBeforePreview;
+        bool editorPreviewing;
+        float cellIntervalBeforePreview;
+        float currentPositionBeforePreview;
+        float scrollOffsetBeforePreview;
+        int editorPreviewItemCount = -1;
+
+        internal override bool EditorPreviewing => editorPreviewing;
+
+        /// <summary>
+        /// Edit-mode preview is currently active.
+        /// </summary>
+        protected bool IsEditorPreviewing => editorPreviewing;
+#endif
+
         /// <summary>
         /// 初期化を行います.
         /// </summary>
@@ -95,20 +113,20 @@ namespace FancyScrollView
         /// <summary>
         /// セルのレイアウトを強制的に更新します.
         /// </summary>
-        protected virtual void Relayout() => UpdatePosition(currentPosition, false);
+        protected virtual void Relayout() => UpdatePositionInternal(currentPosition, false);
 
         /// <summary>
         /// セルのレイアウトと表示内容を強制的に更新します.
         /// </summary>
-        protected virtual void Refresh() => UpdatePosition(currentPosition, true);
+        protected virtual void Refresh() => UpdatePositionInternal(currentPosition, true);
 
         /// <summary>
         /// スクロール位置を更新します.
         /// </summary>
         /// <param name="position">スクロール位置.</param>
-        protected virtual void UpdatePosition(float position) => UpdatePosition(position, false);
+        protected virtual void UpdatePosition(float position) => UpdatePositionInternal(position, false);
 
-        void UpdatePosition(float position, bool forceRefresh)
+        protected void UpdatePositionInternal(float position, bool forceRefresh)
         {
             if (!initialized)
             {
@@ -146,10 +164,61 @@ namespace FancyScrollView
                         typeof(TItemData).FullName, typeof(TContext).FullName, CellPrefab.name));
                 }
 
+#if UNITY_EDITOR
+                if (editorPreviewing)
+                {
+                    MarkEditorPreviewObject(cell.gameObject);
+                }
+#endif
+
                 cell.SetContext(Context);
                 cell.Initialize();
+
+#if UNITY_EDITOR
+                if (editorPreviewing)
+                {
+                    MarkEditorPreviewObject(cell.gameObject);
+                }
+#endif
+
                 cell.SetVisible(false);
                 pool.Add(cell);
+            }
+        }
+
+        /// <summary>
+        /// Destroys all pooled cells and resets initialization state.
+        /// </summary>
+        /// <param name="destroyImmediately">Use immediate destruction. This is required for edit-mode cleanup.</param>
+        protected void ClearCellPool(bool destroyImmediately)
+        {
+            for (var i = 0; i < pool.Count; i++)
+            {
+                var cell = pool[i];
+                if (cell != null)
+                {
+                    DestroyGameObject(cell.gameObject, destroyImmediately);
+                }
+            }
+
+            pool.Clear();
+            initialized = false;
+        }
+
+        static void DestroyGameObject(GameObject gameObject, bool destroyImmediately)
+        {
+            if (gameObject == null)
+            {
+                return;
+            }
+
+            if (destroyImmediately)
+            {
+                DestroyImmediate(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
             }
         }
 
@@ -186,11 +255,211 @@ namespace FancyScrollView
         int CircularIndex(int i, int size) => size < 1 ? 0 : i < 0 ? size - 1 + (i + 1) % size : i % size;
 
 #if UNITY_EDITOR
+        internal override string GetEditorPreviewError()
+        {
+            if (Application.isPlaying)
+            {
+                return "Preview is only available in Edit Mode.";
+            }
+
+            if (!HasEditorPreviewDataSource())
+            {
+                return string.Format(
+                    "Implement IFancyScrollPreviewDataSource<{0}> to provide preview data.",
+                    EditorPreviewItemDataTypeName);
+            }
+
+            if (!HasEditorPreviewCellPrefab())
+            {
+                return "Cell Prefab is not assigned.";
+            }
+
+            if (cellContainer == null)
+            {
+                return "Cell Container is not assigned.";
+            }
+
+            if (GetEditorPreviewItemCount() <= 0)
+            {
+                return "PreviewItemCount must be greater than 0.";
+            }
+
+            return null;
+        }
+
+        internal override float GetEditorPreviewMaxPosition() => Mathf.Max(0, GetEditorPreviewItemCount() - 1);
+
+        internal override void BeginEditorPreview()
+        {
+            if (editorPreviewing)
+            {
+                return;
+            }
+
+            itemsSourceBeforePreview = ItemsSource;
+            initializedBeforePreview = initialized;
+            loopBeforePreview = loop;
+            cellIntervalBeforePreview = cellInterval;
+            currentPositionBeforePreview = currentPosition;
+            scrollOffsetBeforePreview = scrollOffset;
+            editorPreviewItemCount = -1;
+            editorPreviewing = true;
+
+            (this as IFancyScrollPreviewLifecycle)?.OnBeginPreview();
+            OnEditorPreviewBegin();
+
+            ClearCellPool(true);
+            ClearEditorPreviewObjects();
+        }
+
+        internal override void UpdateEditorPreview(float position, bool forceRefresh)
+        {
+            if (!editorPreviewing)
+            {
+                BeginEditorPreview();
+            }
+
+            if (forceRefresh)
+            {
+                ClearCellPool(true);
+                ClearEditorPreviewObjects();
+            }
+
+            var itemCount = GetEditorPreviewItemCount();
+            if (forceRefresh || itemCount != editorPreviewItemCount)
+            {
+                editorPreviewItemCount = itemCount;
+                ApplyEditorPreviewItems(CreateEditorPreviewItems(itemCount));
+            }
+
+            ApplyEditorPreviewPosition(position, forceRefresh);
+            MarkEditorPreviewCells();
+        }
+
+        internal override void EndEditorPreview()
+        {
+            if (!editorPreviewing)
+            {
+                return;
+            }
+
+            ClearCellPool(true);
+            ClearEditorPreviewObjects();
+
+            ItemsSource = itemsSourceBeforePreview ?? new List<TItemData>();
+            initialized = initializedBeforePreview && pool.Count > 0;
+            loop = loopBeforePreview;
+            cellInterval = cellIntervalBeforePreview;
+            currentPosition = currentPositionBeforePreview;
+            scrollOffset = scrollOffsetBeforePreview;
+            editorPreviewItemCount = -1;
+            editorPreviewing = false;
+
+            OnEditorPreviewEnd();
+            (this as IFancyScrollPreviewLifecycle)?.OnEndPreview();
+        }
+
+        protected virtual string EditorPreviewItemDataTypeName => typeof(TItemData).Name;
+
+        protected virtual bool HasEditorPreviewDataSource() => this is IFancyScrollPreviewDataSource<TItemData>;
+
+        protected virtual bool HasEditorPreviewCellPrefab() => CellPrefab != null;
+
+        protected virtual int GetEditorPreviewItemCount()
+        {
+            return this is IFancyScrollPreviewDataSource<TItemData> source
+                ? Mathf.Max(0, source.PreviewItemCount)
+                : 0;
+        }
+
+        protected virtual IList<TItemData> CreateEditorPreviewItems(int itemCount)
+        {
+            var source = (IFancyScrollPreviewDataSource<TItemData>)this;
+            var items = new List<TItemData>(itemCount);
+            for (var i = 0; i < itemCount; i++)
+            {
+                items.Add(source.CreatePreviewItem(new FancyScrollPreviewItemContext(i, itemCount)));
+            }
+
+            return items;
+        }
+
+        protected virtual void ApplyEditorPreviewItems(IList<TItemData> items) => UpdateContents(items);
+
+        protected virtual void ApplyEditorPreviewPosition(float position, bool forceRefresh)
+        {
+            UpdatePositionInternal(position, forceRefresh);
+        }
+
+        protected virtual void OnEditorPreviewBegin() { }
+
+        protected virtual void OnEditorPreviewEnd() { }
+
+        protected void MarkEditorPreviewObject(GameObject gameObject)
+        {
+            if (gameObject == null)
+            {
+                return;
+            }
+
+            SetHideFlagsRecursively(gameObject.transform, FancyScrollViewBase.EditorPreviewHideFlags);
+        }
+
+        void MarkEditorPreviewCells()
+        {
+            for (var i = 0; i < pool.Count; i++)
+            {
+                var cell = pool[i];
+                if (cell != null)
+                {
+                    MarkEditorPreviewObject(cell.gameObject);
+                }
+            }
+        }
+
+        void ClearEditorPreviewObjects()
+        {
+            if (cellContainer == null)
+            {
+                return;
+            }
+
+            for (var i = cellContainer.childCount - 1; i >= 0; i--)
+            {
+                var child = cellContainer.GetChild(i);
+                if (IsEditorPreviewObject(child.gameObject))
+                {
+                    DestroyGameObject(child.gameObject, true);
+                }
+            }
+        }
+
+        static bool IsEditorPreviewObject(GameObject gameObject)
+        {
+            return (gameObject.hideFlags & FancyScrollViewBase.EditorPreviewHideFlags) ==
+                FancyScrollViewBase.EditorPreviewHideFlags;
+        }
+
+        static void SetHideFlagsRecursively(Transform target, HideFlags hideFlags)
+        {
+            target.gameObject.hideFlags = hideFlags;
+
+            for (var i = 0; i < target.childCount; i++)
+            {
+                SetHideFlagsRecursively(target.GetChild(i), hideFlags);
+            }
+        }
+
         bool cachedLoop;
         float cachedCellInterval, cachedScrollOffset;
 
         void LateUpdate()
         {
+            if (editorPreviewing)
+            {
+                return;
+            }
+
             if (cachedLoop != loop ||
                 cachedCellInterval != cellInterval ||
                 cachedScrollOffset != scrollOffset)

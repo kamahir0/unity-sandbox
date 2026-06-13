@@ -62,6 +62,14 @@ namespace FancyScrollView
 
         Scroller cachedScroller;
 
+#if UNITY_EDITOR
+        bool previewScrollerStateStored;
+        bool previewScrollerDraggable;
+        bool previewScrollbarActive;
+        float previewScrollSensitivity;
+        float previewScrollbarSize;
+#endif
+
         /// <summary>
         /// スクロール位置を制御する <see cref="FancyScrollView.Scroller"/> のインスタンス.
         /// </summary>
@@ -270,6 +278,53 @@ namespace FancyScrollView
             cellInterval = (CellSize + spacing) / totalSize;
             scrollOffset = cellInterval * (1f + reuseCellMarginCount);
         }
+
+#if UNITY_EDITOR
+        protected override void ApplyEditorPreviewPosition(float position, bool forceRefresh)
+        {
+            var scrollerPosition = Scrollable ? ToScrollerPosition(position, 0.5f) : 0f;
+            Scroller.Position = scrollerPosition;
+
+            if (forceRefresh)
+            {
+                base.UpdatePositionInternal(ToFancyScrollViewPosition(Scrollable ? scrollerPosition : 0f), true);
+            }
+        }
+
+        protected override void OnEditorPreviewBegin()
+        {
+            base.OnEditorPreviewBegin();
+
+            previewScrollerDraggable = Scroller.Draggable;
+            previewScrollSensitivity = Scroller.ScrollSensitivity;
+
+            if (Scroller.Scrollbar)
+            {
+                previewScrollbarActive = Scroller.Scrollbar.gameObject.activeSelf;
+                previewScrollbarSize = Scroller.Scrollbar.size;
+            }
+
+            previewScrollerStateStored = true;
+        }
+
+        protected override void OnEditorPreviewEnd()
+        {
+            if (previewScrollerStateStored)
+            {
+                Scroller.Draggable = previewScrollerDraggable;
+                Scroller.ScrollSensitivity = previewScrollSensitivity;
+
+                if (Scroller.Scrollbar)
+                {
+                    Scroller.Scrollbar.gameObject.SetActive(previewScrollbarActive);
+                    Scroller.Scrollbar.size = previewScrollbarSize;
+                }
+            }
+
+            previewScrollerStateStored = false;
+            base.OnEditorPreviewEnd();
+        }
+#endif
 
         protected virtual void OnValidate()
         {

@@ -114,6 +114,14 @@ namespace FancyScrollView
 
             cellGroupTemplate = new GameObject("Group").AddComponent<TGroup>().gameObject;
             cellGroupTemplate.transform.SetParent(cellContainer, false);
+
+#if UNITY_EDITOR
+            if (IsEditorPreviewing)
+            {
+                MarkEditorPreviewObject(cellGroupTemplate);
+            }
+#endif
+
             cellGroupTemplate.SetActive(false);
         }
 
@@ -173,6 +181,59 @@ namespace FancyScrollView
             var groupIndex = itemIndex / startAxisCellCount;
             base.ScrollTo(groupIndex, duration, easing, alignment, onComplete);
         }
+
+#if UNITY_EDITOR
+        protected override string EditorPreviewItemDataTypeName => typeof(TItemData).Name;
+
+        protected override bool HasEditorPreviewDataSource() => this is IFancyScrollPreviewDataSource<TItemData>;
+
+        protected override bool HasEditorPreviewCellPrefab() => true;
+
+        protected override int GetEditorPreviewItemCount()
+        {
+            return this is IFancyScrollPreviewDataSource<TItemData> source
+                ? Mathf.Max(0, source.PreviewItemCount)
+                : 0;
+        }
+
+        internal override float GetEditorPreviewMaxPosition() => Mathf.Max(0, GetEditorPreviewItemCount() - 1);
+
+        protected override IList<TItemData[]> CreateEditorPreviewItems(int itemCount)
+        {
+            var source = (IFancyScrollPreviewDataSource<TItemData>)this;
+            var previewItems = Enumerable.Range(0, itemCount)
+                .Select(index => source.CreatePreviewItem(new FancyScrollPreviewItemContext(index, itemCount)))
+                .ToArray();
+
+            DataCount = previewItems.Length;
+            var groupSize = Mathf.Max(1, startAxisCellCount);
+
+            return previewItems
+                .Select((item, index) => (item, index))
+                .GroupBy(
+                    x => x.index / groupSize,
+                    x => x.item)
+                .Select(group => group.ToArray())
+                .ToArray();
+        }
+
+        protected override void ApplyEditorPreviewPosition(float position, bool forceRefresh)
+        {
+            var groupSize = Mathf.Max(1, startAxisCellCount);
+            base.ApplyEditorPreviewPosition(position / groupSize, forceRefresh);
+        }
+
+        protected override void OnEditorPreviewEnd()
+        {
+            if (cellGroupTemplate != null)
+            {
+                DestroyImmediate(cellGroupTemplate);
+            }
+
+            cellGroupTemplate = null;
+            base.OnEditorPreviewEnd();
+        }
+#endif
     }
 
     /// <summary>
