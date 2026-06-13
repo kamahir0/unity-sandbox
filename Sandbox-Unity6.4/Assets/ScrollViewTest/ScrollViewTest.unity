@@ -389,6 +389,7 @@ GameObject:
   - component: {fileID: 813481726}
   - component: {fileID: 813481725}
   - component: {fileID: 813481724}
+  - component: {fileID: 813481727}
   m_Layer: 0
   m_Name: FancyScrollViewTest
   m_TagString: Untagged
@@ -429,13 +430,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7983017b975d72242b5afa9dbe2f1c7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScrollViewTest.ScrollView
-  cellInterval: 0.22
+  editorPreviewItemCount: 5
+  cellInterval: 0.126
   scrollOffset: 0.5
-  loop: 1
+  loop: 0
   cellContainer: {fileID: 785698553}
-  scroller: {fileID: 0}
+  scroller: {fileID: 813481727}
   cellPrefab: {fileID: 8051696771469657556, guid: c2e60ead14678884c9979943d3585db5, type: 3}
-  previewItemCount: 5
 --- !u!114 &813481725
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -474,6 +475,32 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 813481721}
   m_CullTransparentMesh: 1
+--- !u!114 &813481727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813481721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fc27b5ba4a92854da8315ba70a7ded4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FancyScrollView::FancyScrollView.Scroller
+  viewport: {fileID: 0}
+  scrollDirection: 0
+  movementType: 1
+  elasticity: 0.1
+  scrollSensitivity: 1
+  inertia: 1
+  decelerationRate: 0.03
+  snap:
+    Enable: 1
+    VelocityThreshold: 0.5
+    Duration: 0.3
+    Easing: 24
+  draggable: 1
+  scrollbar: {fileID: 0}
 --- !u!1 &1044860853
 GameObject:
   m_ObjectHideFlags: 0
