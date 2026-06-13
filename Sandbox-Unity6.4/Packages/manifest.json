@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "com.kamahir0.lilja.fancy-scroll-view": "file:../../../lilja/lilja-packages/lilja.fancy-scroll-view",
     "com.annulusgames.lit-motion": "file:C:/Users/hrtkm/develop/unity/sandbox/LitMotion/src/LitMotion/Assets/LitMotion",
     "com.annulusgames.lit-motion.animation": "file:C:/Users/hrtkm/develop/unity/sandbox/LitMotion/src/LitMotion/Assets/LitMotion.Animation",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
@@ -9,6 +8,7 @@
     "com.kamahir0.lilja.debug-ui": "file:../../lilja/lilja-packages/lilja.debug-ui",
     "com.kamahir0.lilja.dev-kit": "file:../../lilja/lilja-packages/lilja.dev-kit",
     "com.kamahir0.lilja.editor-ex": "file:../../lilja/lilja-packages/lilja.editor-ex",
+    "com.kamahir0.lilja.fancy-scroll-view": "file:../../lilja/lilja-packages/lilja.fancy-scroll-view",
     "com.kamahir0.lilja.repository": "file:../../lilja/lilja-packages/lilja.repository",
     "com.kamahir0.lilja.screen-management": "file:../../lilja/lilja-packages/lilja.screen-management",
     "com.unity.ide.rider": "3.0.40",

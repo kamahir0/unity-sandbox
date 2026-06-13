@@ -59,7 +59,7 @@
       "dependencies": {}
     },
     "com.kamahir0.lilja.fancy-scroll-view": {
-      "version": "file:../../../lilja/lilja-packages/lilja.fancy-scroll-view",
+      "version": "file:../../lilja/lilja-packages/lilja.fancy-scroll-view",
       "depth": 0,
       "source": "local",
       "dependencies": {}
