@@ -62,7 +62,9 @@
       "version": "file:../../lilja/lilja-packages/lilja.fancy-scroll-view",
       "depth": 0,
       "source": "local",
-      "dependencies": {}
+      "dependencies": {
+        "com.unity.ugui": "2.0.0"
+      }
     },
     "com.kamahir0.lilja.repository": {
       "version": "file:../../lilja/lilja-packages/lilja.repository",
