@@ -92,7 +92,7 @@ namespace Lilja.FancyScrollView.Example08
                 .Select(i => new ItemData(i))
                 .ToArray();
 
-            gridView.SetItems(items);
+            gridView.UpdateContents(items);
             SelectCell();
         }
     }

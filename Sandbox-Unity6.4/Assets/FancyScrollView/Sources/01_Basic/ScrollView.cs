@@ -22,15 +22,16 @@ namespace Lilja.FancyScrollView.Example01
             scroller.OnValueChanged(UpdatePosition);
         }
 
-        public override void SetItems(IList<ItemData> items)
+        public void UpdateData(IList<ItemData> items)
         {
-            base.SetItems(items);
+            UpdateContents(items);
             scroller.SetTotalCount(items.Count);
         }
 
-        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        protected override bool TryCreatePreviewItem(FancyScrollPreviewItemContext context, out ItemData item)
         {
-            return new ItemData(string.Format("Preview Cell {0:00}", context.Index));
+            item = new ItemData(string.Format("Preview Cell {0:00}", context.Index));
+            return true;
         }
     }
 }

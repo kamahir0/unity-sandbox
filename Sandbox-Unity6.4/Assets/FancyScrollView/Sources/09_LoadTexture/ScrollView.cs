@@ -4,6 +4,7 @@
  * Licensed under MIT (https://github.com/setchi/FancyScrollView/blob/master/LICENSE)
  */
 
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Lilja.FancyScrollView.Example09
@@ -14,12 +15,18 @@ namespace Lilja.FancyScrollView.Example09
 
         protected override FancyCell<ItemData, NullContext> CellPrefab => cellPrefab;
 
-        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        public void UpdateData(IList<ItemData> items)
         {
-            return new ItemData(
+            UpdateContents(items);
+        }
+
+        protected override bool TryCreatePreviewItem(FancyScrollPreviewItemContext context, out ItemData item)
+        {
+            item = new ItemData(
                 string.Format("Preview {0:00}", context.Index),
                 "Edit-mode preview item.",
                 string.Empty);
+            return true;
         }
     }
 }

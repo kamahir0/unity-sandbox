@@ -26,7 +26,7 @@ namespace Lilja.FancyScrollView.Example06
                 .Select(i => new ItemData($"Tab {i}"))
                 .ToList();
 
-            scrollView.SetItems(items);
+            scrollView.UpdateData(items);
             scrollView.SelectCell(0);
         }
 

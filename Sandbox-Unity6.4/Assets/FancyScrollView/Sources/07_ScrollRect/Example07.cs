@@ -84,7 +84,7 @@ namespace Lilja.FancyScrollView.Example07
                 .Select(i => new ItemData($"Cell {i}"))
                 .ToArray();
 
-            scrollView.SetItems(items);
+            scrollView.UpdateData(items);
             SelectCell();
         }
     }

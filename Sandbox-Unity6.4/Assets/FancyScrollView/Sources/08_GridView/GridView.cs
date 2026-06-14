@@ -23,7 +23,7 @@ namespace Lilja.FancyScrollView.Example08
             set
             {
                 paddingHead = value;
-                RefreshLayout();
+                Relayout();
             }
         }
 
@@ -33,7 +33,7 @@ namespace Lilja.FancyScrollView.Example08
             set
             {
                 paddingTail = value;
-                RefreshLayout();
+                Relayout();
             }
         }
 
@@ -43,7 +43,7 @@ namespace Lilja.FancyScrollView.Example08
             set
             {
                 spacing = value;
-                RefreshLayout();
+                Relayout();
             }
         }
 
@@ -53,7 +53,7 @@ namespace Lilja.FancyScrollView.Example08
             set
             {
                 startAxisSpacing = value;
-                RefreshLayout();
+                Relayout();
             }
         }
 
@@ -65,7 +65,7 @@ namespace Lilja.FancyScrollView.Example08
             }
 
             Context.SelectedIndex = index;
-            RefreshItems();
+            Refresh();
         }
 
         public void OnCellClicked(Action<int> callback)
@@ -96,9 +96,10 @@ namespace Lilja.FancyScrollView.Example08
             }
         }
 
-        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        protected override bool TryCreatePreviewItem(FancyScrollPreviewItemContext context, out ItemData item)
         {
-            return new ItemData(context.Index);
+            item = new ItemData(context.Index);
+            return true;
         }
     }
 }

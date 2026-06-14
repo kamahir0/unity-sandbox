@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Lilja.FancyScrollView.Example07
@@ -24,7 +25,7 @@ namespace Lilja.FancyScrollView.Example07
             set
             {
                 paddingHead = value;
-                RefreshLayout();
+                Relayout();
             }
         }
 
@@ -34,7 +35,7 @@ namespace Lilja.FancyScrollView.Example07
             set
             {
                 paddingTail = value;
-                RefreshLayout();
+                Relayout();
             }
         }
 
@@ -44,13 +45,18 @@ namespace Lilja.FancyScrollView.Example07
             set
             {
                 spacing = value;
-                RefreshLayout();
+                Relayout();
             }
         }
 
         public void OnCellClicked(Action<int> callback)
         {
             Context.OnCellClicked = callback;
+        }
+
+        public void UpdateData(IList<ItemData> items)
+        {
+            UpdateContents(items);
         }
 
         public void ScrollTo(int index, float duration, Ease easing, Alignment alignment = Alignment.Middle)
@@ -84,12 +90,13 @@ namespace Lilja.FancyScrollView.Example07
             }
 
             Context.SelectedIndex = index;
-            RefreshItems();
+            Refresh();
         }
 
-        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        protected override bool TryCreatePreviewItem(FancyScrollPreviewItemContext context, out ItemData item)
         {
-            return new ItemData(string.Format("Preview Cell {0:00}", context.Index));
+            item = new ItemData(string.Format("Preview Cell {0:00}", context.Index));
+            return true;
         }
     }
 }

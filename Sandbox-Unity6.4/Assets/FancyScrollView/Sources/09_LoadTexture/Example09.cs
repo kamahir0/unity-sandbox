@@ -68,7 +68,7 @@ namespace Lilja.FancyScrollView.Example09
 
         void Start()
         {
-            scrollView.SetItems(itemData);
+            scrollView.UpdateData(itemData);
         }
     }
 }

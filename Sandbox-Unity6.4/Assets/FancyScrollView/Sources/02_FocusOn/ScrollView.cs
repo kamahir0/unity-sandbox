@@ -27,9 +27,9 @@ namespace Lilja.FancyScrollView.Example02
             scroller.OnSelectionChanged(UpdateSelection);
         }
 
-        public override void SetItems(IList<ItemData> items)
+        public void UpdateData(IList<ItemData> items)
         {
-            base.SetItems(items);
+            UpdateContents(items);
             scroller.SetTotalCount(items.Count);
         }
 
@@ -41,7 +41,7 @@ namespace Lilja.FancyScrollView.Example02
             }
 
             Context.SelectedIndex = index;
-            RefreshItems();
+            Refresh();
 
             onSelectionChanged?.Invoke(index);
         }
@@ -72,9 +72,10 @@ namespace Lilja.FancyScrollView.Example02
             scroller.ScrollTo(index, 0.35f, Ease.OutCubic);
         }
 
-        protected override ItemData CreatePreviewItem(FancyScrollPreviewItemContext context)
+        protected override bool TryCreatePreviewItem(FancyScrollPreviewItemContext context, out ItemData item)
         {
-            return new ItemData(string.Format("Preview Cell {0:00}", context.Index));
+            item = new ItemData(string.Format("Preview Cell {0:00}", context.Index));
+            return true;
         }
     }
 }
