@@ -61,7 +61,7 @@
 			"path": "."
 		},
 		{
-			"path": "../../lilja/lilja-packages"
+			"path": "../lilja/lilja-packages"
 		}
 	],
 	"settings": {}
