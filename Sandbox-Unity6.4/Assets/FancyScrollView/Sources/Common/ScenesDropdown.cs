@@ -25,7 +25,8 @@ namespace Lilja.FancyScrollView
             "06_LoopTabBar",
             "07_ScrollRect",
             "08_GridView",
-            "09_LoadTexture"
+            "09_LoadTexture",
+            "10_3DRing"
         };
 
         void Start()
