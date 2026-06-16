@@ -1,7 +1,5 @@
 {
   "dependencies": {
-    "com.annulusgames.lit-motion": "file:C:/Users/hrtkm/develop/unity/sandbox/LitMotion/src/LitMotion/Assets/LitMotion",
-    "com.annulusgames.lit-motion.animation": "file:C:/Users/hrtkm/develop/unity/sandbox/LitMotion/src/LitMotion/Assets/LitMotion.Animation",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.github-glitchenzo.nugetforunity": "4.5.0",
     "com.kamahir0.lilja.asset-management": "file:../../lilja/lilja-packages/lilja.asset-management",
