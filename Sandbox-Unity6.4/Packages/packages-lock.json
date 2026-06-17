@@ -1,5 +1,16 @@
 {
   "dependencies": {
+    "com.annulusgames.lit-motion": {
+      "version": "https://github.com/annulusgames/LitMotion.git?path=src/LitMotion/Assets/LitMotion",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.burst": "1.6.0",
+        "com.unity.collections": "1.5.1",
+        "com.unity.mathematics": "1.0.1"
+      },
+      "hash": "2053ef5c23f2ae755dd85d5865b698c542c351b6"
+    },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
       "depth": 0,
@@ -14,34 +25,26 @@
       "dependencies": {},
       "url": "https://package.openupm.com"
     },
-    "com.kamahir0.lilja.asset-management": {
-      "version": "file:../../lilja/lilja-packages/lilja.asset-management",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "com.unity.addressables": "2.9.0"
-      }
-    },
     "com.kamahir0.lilja.debug-ui": {
-      "version": "file:../../lilja/lilja-packages/lilja.debug-ui",
+      "version": "file:../../lilja/lilja-packages/lilja.debug-ui/src/Lilja.DebugUI",
       "depth": 0,
       "source": "local",
       "dependencies": {}
     },
     "com.kamahir0.lilja.dev-kit": {
-      "version": "file:../../lilja/lilja-packages/lilja.dev-kit",
+      "version": "file:../../lilja/lilja-packages/lilja.dev-kit/src/Lilja.DevKit",
       "depth": 0,
       "source": "local",
       "dependencies": {}
     },
     "com.kamahir0.lilja.editor-ex": {
-      "version": "file:../../lilja/lilja-packages/lilja.editor-ex",
+      "version": "file:../../lilja/lilja-packages/lilja.editor-ex/src/Lilja.EditorEx",
       "depth": 0,
       "source": "local",
       "dependencies": {}
     },
     "com.kamahir0.lilja.fancy-scroll-view": {
-      "version": "file:../../lilja/lilja-packages/lilja.fancy-scroll-view",
+      "version": "file:../../lilja/lilja-packages/lilja.fancy-scroll-view/src/Lilja.FancyScrollView",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -49,7 +52,7 @@
       }
     },
     "com.kamahir0.lilja.repository": {
-      "version": "file:../../lilja/lilja-packages/lilja.repository",
+      "version": "file:../../lilja/lilja-packages/lilja.repository/src/Lilja.Repository",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -57,28 +60,34 @@
       }
     },
     "com.kamahir0.lilja.screen-management": {
-      "version": "file:../../lilja/lilja-packages/lilja.screen-management",
+      "version": "file:../../lilja/lilja-packages/lilja.screen-management/src/Lilja.ScreenManagement",
       "depth": 0,
       "source": "local",
       "dependencies": {
         "com.unity.ugui": "2.0.0"
       }
     },
-    "com.unity.addressables": {
-      "version": "2.9.1",
+    "com.unity.burst": {
+      "version": "1.8.29",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.profiling.core": "1.0.2",
-        "com.unity.test-framework": "1.4.5",
-        "com.unity.modules.assetbundle": "1.0.0",
-        "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.modules.imageconversion": "1.0.0",
-        "com.unity.modules.unitywebrequest": "1.0.0",
-        "com.unity.scriptablebuildpipeline": "2.6.1",
-        "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
+        "com.unity.mathematics": "1.2.1",
+        "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"
+    },
+    "com.unity.collections": {
+      "version": "6.4.0",
+      "depth": 1,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.burst": "1.8.23",
+        "com.unity.mathematics": "1.3.2",
+        "com.unity.nuget.mono-cecil": "1.11.5",
+        "com.unity.test-framework": "1.4.6",
+        "com.unity.test-framework.performance": "3.0.3"
+      }
     },
     "com.unity.ext.nunit": {
       "version": "2.0.5",
@@ -104,6 +113,13 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.mathematics": {
+      "version": "1.3.3",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.multiplayer.center": {
       "version": "1.0.1",
       "depth": 0,
@@ -112,21 +128,11 @@
         "com.unity.modules.uielements": "1.0.0"
       }
     },
-    "com.unity.profiling.core": {
-      "version": "1.0.3",
+    "com.unity.nuget.mono-cecil": {
+      "version": "1.11.6",
       "depth": 2,
       "source": "registry",
       "dependencies": {},
-      "url": "https://packages.unity.com"
-    },
-    "com.unity.scriptablebuildpipeline": {
-      "version": "2.6.1",
-      "depth": 2,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.test-framework": "1.4.5",
-        "com.unity.modules.assetbundle": "1.0.0"
-      },
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
@@ -138,6 +144,16 @@
         "com.unity.modules.imgui": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
       }
+    },
+    "com.unity.test-framework.performance": {
+      "version": "3.4.0",
+      "depth": 2,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.test-framework": "1.1.33",
+        "com.unity.modules.jsonserialize": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
     },
     "com.unity.ugui": {
       "version": "2.0.0",
