@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.kamahir0.lilja.master-data": "file:../../lilja/lilja-packages/lilja.master-data/src/Lilja.MasterData",
     "com.annulusgames.lit-motion": "https://github.com/annulusgames/LitMotion.git?path=src/LitMotion/Assets/LitMotion",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.github-glitchenzo.nugetforunity": "4.5.0",

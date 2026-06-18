@@ -51,6 +51,12 @@
         "com.unity.ugui": "2.0.0"
       }
     },
+    "com.kamahir0.lilja.master-data": {
+      "version": "file:../../lilja/lilja-packages/lilja.master-data/src/Lilja.MasterData",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.kamahir0.lilja.repository": {
       "version": "file:../../lilja/lilja-packages/lilja.repository/src/Lilja.Repository",
       "depth": 0,
