@@ -1,0 +1,38 @@
+kind: table
+table: rewards
+typeName: RewardMaster
+
+keys:
+  primary:
+    fields: [Id]
+  secondary:
+    - fields: [ItemId]
+      unique: false
+
+fields:
+  - name: Id
+    type: int
+  - name: ItemId
+    type: int
+  - name: Count
+    type: int
+
+refs:
+  - name: Item
+    target: ItemMaster
+    targetKey:
+      primary: true
+    fields:
+      - local: ItemId
+        target: Id
+
+rows:
+  - Id: 1
+    ItemId: 1001
+    Count: 3
+  - Id: 2
+    ItemId: 3001
+    Count: 15
+  - Id: 3
+    ItemId: 2001
+    Count: 1

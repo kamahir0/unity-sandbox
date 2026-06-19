@@ -1,0 +1,6 @@
+kind: enum
+name: ItemType
+members:
+  - Consumable
+  - Material
+  - Weapon

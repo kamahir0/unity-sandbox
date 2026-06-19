@@ -1,0 +1,42 @@
+kind: table
+table: items
+typeName: ItemMaster
+
+keys:
+  primary:
+    fields: [Id]
+  secondary:
+    - fields: [Type]
+      unique: false
+    - fields: [Code]
+      unique: true
+
+fields:
+  - name: Id
+    type: int
+  - name: Code
+    type: string
+  - name: Type
+    type: ItemType
+  - name: Price
+    type: Price
+
+rows:
+  - Id: 1001
+    Code: potion
+    Type: Consumable
+    Price:
+      Amount: 50
+      Currency: gold
+  - Id: 2001
+    Code: iron_sword
+    Type: Weapon
+    Price:
+      Amount: 300
+      Currency: gold
+  - Id: 3001
+    Code: iron_ore
+    Type: Material
+    Price:
+      Amount: 10
+      Currency: gold

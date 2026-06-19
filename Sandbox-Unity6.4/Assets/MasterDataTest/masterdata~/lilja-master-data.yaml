@@ -1,0 +1,14 @@
+csharp:
+  namespace: MasterDataTest.Data
+  output: dist/cs
+
+master:
+  input: master
+
+memory:
+  output: dist/master-memory
+  fileName: master-data.bytes
+
+sync:
+  cs: ../Generated
+  memory: ../Resources

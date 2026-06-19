@@ -1,0 +1,7 @@
+kind: struct
+name: Price
+fields:
+  - name: Amount
+    type: int
+  - name: Currency
+    type: string

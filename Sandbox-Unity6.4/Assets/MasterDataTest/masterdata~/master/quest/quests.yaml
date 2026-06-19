@@ -1,0 +1,65 @@
+kind: table
+table: quests
+typeName: QuestMaster
+
+keys:
+  primary:
+    fields: [Id]
+  secondary:
+    - fields: [Chapter, Number]
+      unique: true
+
+fields:
+  - name: Id
+    type: int
+  - name: Chapter
+    type: int
+  - name: Number
+    type: int
+  - name: Title
+    type: string
+  - name: RequiredItemId
+    type: int
+  - name: MainRewardId
+    type: int
+  - name: RewardIds
+    type: list<int>
+
+refs:
+  - name: RequiredItem
+    target: ItemMaster
+    targetKey:
+      primary: true
+    fields:
+      - local: RequiredItemId
+        target: Id
+  - name: MainReward
+    target: RewardMaster
+    targetKey:
+      primary: true
+    fields:
+      - local: MainRewardId
+        target: Id
+  - name: Rewards
+    target: RewardMaster
+    targetKey:
+      primary: true
+    fields:
+      - local: RewardIds
+        target: Id
+
+rows:
+  - Id: 101
+    Chapter: 1
+    Number: 1
+    Title: First Delivery
+    RequiredItemId: 1001
+    MainRewardId: 1
+    RewardIds: [1, 2]
+  - Id: 102
+    Chapter: 1
+    Number: 2
+    Title: Sword Trial
+    RequiredItemId: 2001
+    MainRewardId: 3
+    RewardIds: [3]
