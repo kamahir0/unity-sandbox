@@ -1,46 +1,146 @@
 kind: table
 table: items
 typeName: ItemMaster
-
 keys:
   primary:
-    fields: [Id]
+    fields:
+    - Id
   secondary:
-    - fields: [Type]
-      unique: false
-    - fields: [Code]
-      unique: true
-
+  - fields:
+    - Type
+    unique: false
+  - fields:
+    - Code
+    unique: true
 fields:
-  - name: Id
-    type: int
-  - name: Code
-    type: string
-  - name: Type
-    type: ItemType
-  - name: Price
-    type: Price
-
+- name: Id
+  type: int
+  fixedIndex: 0
+- name: Code
+  type: string
+  fixedIndex: 1
+- name: Type
+  type: ItemType
+  fixedIndex: 2
+- name: Price
+  type: Price
+  fixedIndex: 3
+- name: Field5
+  type: string
+  fixedIndex: 4
+refs: []
 rows:
-  - data:
-      Id: 1001
-      Code: potion
-      Type: Consumable
-      Price:
-        Amount: 50
-        Currency: gold
-  - data:
-      Id: 2001
-      Code: iron_sword
-      Type: Weapon
-      Price:
-        Amount: 300
-        Currency: gold
-  - data:
-      Id: 3001
-      Code: iron_ore
-      Type: Material
-      Price:
-        Amount: 10
-        Currency: gold
-
+- data:
+    Code: potion
+    Field5: ''
+    Id: 1001
+    Price:
+      Amount: 50
+      Currency: gold
+    Type: Consumable
+- data:
+    Code: iron_sword
+    Field5: ''
+    Id: 2001
+    Price:
+      Amount: 300
+      Currency: gold
+    Type: Weapon
+- data:
+    Code: iron_ore
+    Field5: ''
+    Id: 3001
+    Price:
+      Amount: 10
+      Currency: gold
+    Type: Material
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''
+- data:
+    Code: ''
+    Field5: ''
+    Id: 0
+    Price: ''
+    Type: ''

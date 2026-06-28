@@ -49,17 +49,19 @@ refs:
         target: Id
 
 rows:
-  - Id: 101
-    Chapter: 1
-    Number: 1
-    Title: First Delivery
-    RequiredItemId: 1001
-    MainRewardId: 1
-    RewardIds: [1, 2]
-  - Id: 102
-    Chapter: 1
-    Number: 2
-    Title: Sword Trial
-    RequiredItemId: 2001
-    MainRewardId: 3
-    RewardIds: [3]
+  - data:
+      Id: 101
+      Chapter: 1
+      Number: 1
+      Title: First Delivery
+      RequiredItemId: 1001
+      MainRewardId: 1
+      RewardIds: [1, 2]
+  - data:
+      Id: 102
+      Chapter: 1
+      Number: 2
+      Title: Sword Trial
+      RequiredItemId: 2001
+      MainRewardId: 3
+      RewardIds: [3]
