@@ -22,21 +22,25 @@ fields:
     type: Price
 
 rows:
-  - Id: 1001
-    Code: potion
-    Type: Consumable
-    Price:
-      Amount: 50
-      Currency: gold
-  - Id: 2001
-    Code: iron_sword
-    Type: Weapon
-    Price:
-      Amount: 300
-      Currency: gold
-  - Id: 3001
-    Code: iron_ore
-    Type: Material
-    Price:
-      Amount: 10
-      Currency: gold
+  - data:
+      Id: 1001
+      Code: potion
+      Type: Consumable
+      Price:
+        Amount: 50
+        Currency: gold
+  - data:
+      Id: 2001
+      Code: iron_sword
+      Type: Weapon
+      Price:
+        Amount: 300
+        Currency: gold
+  - data:
+      Id: 3001
+      Code: iron_ore
+      Type: Material
+      Price:
+        Amount: 10
+        Currency: gold
+
