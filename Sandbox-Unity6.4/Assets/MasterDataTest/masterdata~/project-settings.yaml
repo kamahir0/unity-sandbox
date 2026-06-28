@@ -1,0 +1,34 @@
+tool:
+  version: 0.1.0
+
+csharp:
+  namespace: MasterDataTest.Data
+  output: dist/cs
+
+master:
+  input: master
+
+memory:
+  output: dist/master-memory
+  fileName: master-data.bytes
+
+tags:
+  allowed:
+    - dev
+    - test
+    - prod
+
+buildProfiles:
+  dev:
+    includeTags:
+      - dev
+    excludeTags: []
+  production:
+    includeTags: []
+    excludeTags:
+      - dev
+      - test
+
+sync:
+  cs: ../Generated
+  memory: ../Resources
