@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="sprite-animation-inspector">
+        <ui:VisualElement name="asset-fields" />
+        <ui:Label text="Frames" class="sprite-animation-section-title" />
+        <ui:VisualElement name="frame-toolbar" class="sprite-animation-toolbar" />
+        <ui:VisualElement name="frame-list-container" class="sprite-animation-frame-list-container" />
+        <ui:HelpBox name="validation-box" text="" message-type="None" />
+        <ui:Label text="Preview" class="sprite-animation-section-title" />
+        <ui:VisualElement name="preview-container" class="sprite-animation-preview-container" />
+    </ui:VisualElement>
+</ui:UXML>

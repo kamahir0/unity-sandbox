@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="sprite-animation-window">
+        <ui:VisualElement class="sprite-animation-toolbar">
+            <ui:Button name="refresh-button" text="Refresh" />
+            <ui:Button name="select-all-button" text="Select All" />
+            <ui:Button name="clear-button" text="Clear" />
+            <ui:VisualElement class="sprite-animation-toolbar-spacer" />
+            <ui:Button name="generate-button" text="Generate Selected" class="sprite-animation-primary-button" />
+        </ui:VisualElement>
+        <ui:TreeView name="group-tree" class="sprite-animation-tree" />
+        <ui:HelpBox name="status-box" text="" message-type="None" class="sprite-animation-status" />
+    </ui:VisualElement>
+</ui:UXML>

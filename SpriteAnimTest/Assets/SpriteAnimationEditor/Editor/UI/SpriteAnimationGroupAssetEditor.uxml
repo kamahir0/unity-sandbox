@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="sprite-animation-inspector">
+        <ui:VisualElement name="group-fields" />
+        <ui:Button name="generate-group-button" text="Generate Group" class="sprite-animation-primary-button sprite-animation-generate-group-button" />
+        <ui:HelpBox name="generation-status-box" text="" message-type="None" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,130 @@
+.sprite-animation-window {
+    flex-grow: 1;
+    min-width: 340px;
+}
+
+.sprite-animation-toolbar {
+    flex-direction: row;
+    padding: 4px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(128, 128, 128, 0.35);
+}
+
+.sprite-animation-toolbar > Button {
+    margin-right: 3px;
+}
+
+.sprite-animation-toolbar-spacer {
+    flex-grow: 1;
+}
+
+.sprite-animation-primary-button {
+    -unity-font-style: bold;
+}
+
+.sprite-animation-tree {
+    flex-grow: 1;
+    min-height: 180px;
+}
+
+.sprite-animation-tree-row {
+    flex-direction: row;
+    align-items: center;
+    height: 22px;
+}
+
+.sprite-animation-tree-toggle {
+    width: 18px;
+    margin-left: 1px;
+    margin-right: 3px;
+}
+
+.sprite-animation-tree-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+
+.sprite-animation-tree-label {
+    flex-grow: 1;
+    -unity-text-align: middle-left;
+}
+
+.sprite-animation-status {
+    margin: 4px;
+}
+
+.sprite-animation-inspector {
+    flex-grow: 1;
+    padding: 4px;
+}
+
+.sprite-animation-section-title {
+    -unity-font-style: bold;
+    margin-top: 8px;
+    margin-bottom: 3px;
+}
+
+.sprite-animation-frame-list-container {
+    min-height: 150px;
+    height: 240px;
+    border-width: 1px;
+    border-color: rgba(128, 128, 128, 0.35);
+}
+
+.sprite-animation-frame-row {
+    flex-direction: row;
+    align-items: center;
+    height: 42px;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.sprite-animation-frame-thumbnail {
+    width: 36px;
+    height: 36px;
+    margin-right: 5px;
+}
+
+.sprite-animation-frame-sprite-field {
+    flex-grow: 1;
+    margin-right: 4px;
+}
+
+.sprite-animation-frame-duration-field {
+    width: 90px;
+}
+
+.sprite-animation-preview-container {
+    min-height: 230px;
+    border-width: 1px;
+    border-color: rgba(128, 128, 128, 0.35);
+    padding: 4px;
+}
+
+.sprite-animation-preview-image {
+    flex-grow: 1;
+    min-height: 160px;
+    margin-bottom: 4px;
+}
+
+.sprite-animation-preview-controls {
+    flex-direction: row;
+    align-items: center;
+}
+
+.sprite-animation-preview-slider {
+    flex-grow: 1;
+    margin-left: 4px;
+}
+
+.sprite-animation-preview-status {
+    -unity-text-align: middle-center;
+    margin-top: 3px;
+}
+
+.sprite-animation-generate-group-button {
+    height: 26px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
