@@ -68,6 +68,8 @@ namespace SpriteAnimationEditor
             AnimationClip clip,
             string bindingPath)
         {
+            SpriteAnimationAssetMigration.EnsureUpToDate(source);
+
             foreach (EditorCurveBinding curveBinding in AnimationUtility.GetCurveBindings(clip))
             {
                 AnimationUtility.SetEditorCurve(clip, curveBinding, null);
@@ -94,7 +96,7 @@ namespace SpriteAnimationEditor
                     time = elapsedMilliseconds / MillisecondsPerSecond,
                     value = frame.Sprite,
                 });
-                elapsedMilliseconds += frame.DurationMilliseconds;
+                elapsedMilliseconds += source.GetDurationMilliseconds(frame);
             }
 
             // Unity includes one sample after the last object-reference key in
@@ -223,6 +225,8 @@ namespace SpriteAnimationEditor
                         continue;
                     }
 
+                    SpriteAnimationAssetMigration.EnsureUpToDate(source);
+
                     string sourcePath = AssetDatabase.GetAssetPath(source);
                     string sourceGuid = AssetDatabase.AssetPathToGUID(sourcePath);
                     if (string.IsNullOrEmpty(sourceGuid) || !IsAssetsPath(sourcePath))
@@ -317,13 +321,14 @@ namespace SpriteAnimationEditor
                     errors.Add($"Frame {frameIndex} has no Sprite.");
                 }
 
-                if (frame.DurationMilliseconds < 1)
+                int durationMilliseconds = source.GetDurationMilliseconds(frame);
+                if (durationMilliseconds < 1)
                 {
                     errors.Add($"Frame {frameIndex} Duration Milliseconds must be at least 1.");
                 }
                 else
                 {
-                    totalMilliseconds += frame.DurationMilliseconds;
+                    totalMilliseconds += durationMilliseconds;
                 }
             }
 

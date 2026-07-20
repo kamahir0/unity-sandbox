@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:sae="SpriteAnimationEditor" editor-extension-mode="True">
+    <ui:VisualElement class="sprite-animation-frame-row">
+        <ui:Image name="thumbnail" class="sprite-animation-frame-thumbnail" />
+        <ui:VisualElement class="sprite-animation-frame-fields">
+            <uie:ObjectField name="sprite-field" label="Sprite" class="unity-base-field__aligned sprite-animation-frame-sprite-field" />
+            <sae:DurationOverrideField name="duration-control" label="Duration (ms)" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

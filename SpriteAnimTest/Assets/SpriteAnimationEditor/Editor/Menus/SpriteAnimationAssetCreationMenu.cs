@@ -22,6 +22,7 @@ namespace SpriteAnimationEditor
         public static SpriteAnimationAsset Create(IEnumerable<UnityEngine.Object> selectedObjects)
         {
             var asset = ScriptableObject.CreateInstance<SpriteAnimationAsset>();
+            asset.InitializeDurationData();
             List<Sprite> sprites = SpriteAnimationSpriteCollector.Collect(selectedObjects);
             if (sprites.Count == 0)
             {
@@ -35,6 +36,7 @@ namespace SpriteAnimationEditor
             {
                 SerializedProperty frame = frames.GetArrayElementAtIndex(index);
                 frame.FindPropertyRelative("sprite").objectReferenceValue = sprites[index];
+                frame.FindPropertyRelative("overrideDuration").boolValue = false;
                 frame.FindPropertyRelative("durationMilliseconds").intValue = 100;
             }
 

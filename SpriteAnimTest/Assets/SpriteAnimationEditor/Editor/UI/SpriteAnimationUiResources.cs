@@ -20,6 +20,12 @@ namespace SpriteAnimationEditor
             return root;
         }
 
+        public static void CloneInto(VisualElement root, string uxmlFileName)
+        {
+            VisualTreeAsset tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UiRoot + uxmlFileName);
+            tree?.CloneTree(root);
+        }
+
         public static void AddStyleSheet(VisualElement root, string ussFileName)
         {
             StyleSheet style = AssetDatabase.LoadAssetAtPath<StyleSheet>(UiRoot + ussFileName);

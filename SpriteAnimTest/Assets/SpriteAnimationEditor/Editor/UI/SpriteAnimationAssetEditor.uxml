@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:sae="SpriteAnimationEditor" editor-extension-mode="True">
     <ui:VisualElement class="sprite-animation-inspector">
-        <ui:VisualElement name="asset-fields" />
-        <ui:Label text="Frames" class="sprite-animation-section-title" />
-        <ui:VisualElement name="frame-toolbar" class="sprite-animation-toolbar" />
+        <uie:PropertyField name="loop-field" binding-path="loop" />
+        <sae:DurationOverrideField name="default-duration-control" label="Default Duration (ms)" />
         <ui:VisualElement name="frame-list-container" class="sprite-animation-frame-list-container" />
     </ui:VisualElement>
 </ui:UXML>
