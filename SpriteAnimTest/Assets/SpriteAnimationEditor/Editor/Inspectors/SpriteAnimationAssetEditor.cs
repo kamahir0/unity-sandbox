@@ -18,9 +18,10 @@ namespace SpriteAnimationEditor
         private ListView frameList;
         private Button setDurationButton;
         private IntegerField batchDurationField;
-        private HelpBox validationBox;
         private Image previewImage;
-        private Button playButton;
+        private Button previousFrameButton;
+        private Button playPauseButton;
+        private Button nextFrameButton;
         private SliderInt previewSlider;
         private Label previewStatus;
         private IVisualElementScheduledItem previewSchedule;
@@ -45,16 +46,127 @@ namespace SpriteAnimationEditor
 
             BuildFrameToolbar(root.Q<VisualElement>("frame-toolbar"));
             BuildFrameList(root.Q<VisualElement>("frame-list-container"));
-            validationBox = root.Q<HelpBox>("validation-box");
-            BuildPreview(root.Q<VisualElement>("preview-container"));
 
             root.Bind(serializedObject);
-            root.RegisterCallback<DetachFromPanelEvent>(_ => previewSchedule?.Pause());
-            previewSchedule = root.schedule.Execute(UpdatePlayback).Every(16);
             RebuildFrameList();
-            RefreshValidation();
             RefreshPreview();
             return root;
+        }
+
+        public override bool HasPreviewGUI()
+        {
+            return true;
+        }
+
+        public override GUIContent GetPreviewTitle()
+        {
+            return EditorGUIUtility.TrTextContent("Preview");
+        }
+
+        public override VisualElement CreatePreview(VisualElement inspectorPreviewWindow)
+        {
+            VisualElement previewPane = inspectorPreviewWindow.Q("content-container");
+            VisualElement toolbar = inspectorPreviewWindow.Q("toolbar");
+            if (previewPane == null || toolbar == null)
+            {
+                return null;
+            }
+
+            previousFrameButton = CreatePreviewToolbarButton(
+                "sprite-animation-previous-frame",
+                "Animation.PrevKey",
+                "Previous Frame",
+                PreviousFrame);
+            playPauseButton = CreatePreviewToolbarButton(
+                "sprite-animation-play-pause",
+                "PlayButton",
+                "Play",
+                TogglePlayback);
+            nextFrameButton = CreatePreviewToolbarButton(
+                "sprite-animation-next-frame",
+                "Animation.NextKey",
+                "Next Frame",
+                NextFrame);
+            toolbar.Add(previousFrameButton);
+            toolbar.Add(playPauseButton);
+            toolbar.Add(nextFrameButton);
+
+            var root = new VisualElement
+            {
+                name = "sprite-animation-preview",
+                focusable = true,
+            };
+            root.AddToClassList("sprite-animation-standard-preview");
+            SpriteAnimationUiResources.AddStyleSheet(root, "SpriteAnimationEditor.uss");
+
+            previewImage = new Image
+            {
+                scaleMode = ScaleMode.ScaleToFit,
+                pickingMode = PickingMode.Ignore,
+            };
+            previewImage.AddToClassList("sprite-animation-preview-image");
+            root.Add(previewImage);
+
+            var footer = new VisualElement();
+            footer.AddToClassList("sprite-animation-preview-footer");
+
+            previewSlider = new SliderInt(0, 0);
+            previewSlider.AddToClassList("sprite-animation-preview-slider");
+            previewSlider.RegisterCallback<PointerDownEvent>(_ => SetPlaying(false));
+            previewSlider.RegisterValueChangedCallback(evt =>
+            {
+                previewMilliseconds = evt.newValue;
+                RefreshPreviewImage();
+            });
+            footer.Add(previewSlider);
+
+            previewStatus = new Label();
+            previewStatus.AddToClassList("sprite-animation-preview-status");
+            footer.Add(previewStatus);
+            root.Add(footer);
+            previewPane.Add(root);
+
+            root.RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                previewSchedule?.Pause();
+                previewSchedule = root.schedule.Execute(UpdatePlayback).Every(16);
+                RefreshPreview();
+            });
+            root.RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                SetPlaying(false);
+                previewSchedule?.Pause();
+                previewSchedule = null;
+            });
+            root.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (evt.keyCode != KeyCode.Space)
+                {
+                    return;
+                }
+
+                TogglePlayback();
+                evt.StopPropagation();
+            });
+
+            RefreshPreview();
+            return inspectorPreviewWindow;
+        }
+
+        private static Button CreatePreviewToolbarButton(
+            string name,
+            string iconName,
+            string tooltip,
+            Action clicked)
+        {
+            var button = new Button(clicked)
+            {
+                name = name,
+                tooltip = tooltip,
+            };
+            button.style.backgroundImage =
+                EditorGUIUtility.IconContent(iconName).image as Texture2D;
+            return button;
         }
 
         private void BuildFrameToolbar(VisualElement toolbar)
@@ -103,33 +215,6 @@ namespace SpriteAnimationEditor
             frameList.RegisterCallback<DragUpdatedEvent>(OnDragUpdated);
             frameList.RegisterCallback<DragPerformEvent>(OnDragPerform);
             container.Add(frameList);
-        }
-
-        private void BuildPreview(VisualElement container)
-        {
-            previewImage = new Image { scaleMode = ScaleMode.ScaleToFit };
-            previewImage.AddToClassList("sprite-animation-preview-image");
-            container.Add(previewImage);
-
-            var controls = new VisualElement();
-            controls.AddToClassList("sprite-animation-preview-controls");
-            controls.Add(new Button(PreviousFrame) { text = "|<" });
-            playButton = new Button(TogglePlayback) { text = "Play" };
-            controls.Add(playButton);
-            controls.Add(new Button(NextFrame) { text = ">|" });
-            previewSlider = new SliderInt(0, 0);
-            previewSlider.AddToClassList("sprite-animation-preview-slider");
-            previewSlider.RegisterValueChangedCallback(evt =>
-            {
-                previewMilliseconds = evt.newValue;
-                RefreshPreviewImage();
-            });
-            controls.Add(previewSlider);
-            container.Add(controls);
-
-            previewStatus = new Label();
-            previewStatus.AddToClassList("sprite-animation-preview-status");
-            container.Add(previewStatus);
         }
 
         private void RebuildFrameList()
@@ -311,44 +396,7 @@ namespace SpriteAnimationEditor
 
         private void OnFrameValueChanged()
         {
-            RefreshValidation();
             RefreshPreview();
-        }
-
-        private void RefreshValidation()
-        {
-            if (validationBox == null)
-            {
-                return;
-            }
-
-            serializedObject.UpdateIfRequiredOrScript();
-            var errors = new List<string>();
-            if (framesProperty.arraySize == 0)
-            {
-                errors.Add("Add at least one Sprite frame.");
-            }
-
-            for (var index = 0; index < framesProperty.arraySize; index++)
-            {
-                SerializedProperty frame = framesProperty.GetArrayElementAtIndex(index);
-                if (frame.FindPropertyRelative("sprite").objectReferenceValue == null)
-                {
-                    errors.Add($"Frame {index} has no Sprite.");
-                }
-
-                if (frame.FindPropertyRelative("durationMilliseconds").intValue < 1)
-                {
-                    errors.Add($"Frame {index} Duration Milliseconds must be at least 1.");
-                }
-            }
-
-            validationBox.text = errors.Count == 0
-                ? "Animation data is valid."
-                : string.Join("\n", errors.Take(6));
-            validationBox.messageType = errors.Count == 0
-                ? HelpBoxMessageType.Info
-                : HelpBoxMessageType.Error;
         }
 
         private void TogglePlayback()
@@ -365,9 +413,33 @@ namespace SpriteAnimationEditor
                 previewMilliseconds = 0;
             }
 
-            isPlaying = !isPlaying;
+            SetPlaying(!isPlaying);
+        }
+
+        private void SetPlaying(bool value)
+        {
+            if (isPlaying == value)
+            {
+                return;
+            }
+
+            isPlaying = value;
             lastPreviewTime = EditorApplication.timeSinceStartup;
-            playButton.text = isPlaying ? "Pause" : "Play";
+            UpdatePlayPauseButton();
+            Repaint();
+        }
+
+        private void UpdatePlayPauseButton()
+        {
+            if (playPauseButton == null)
+            {
+                return;
+            }
+
+            string iconName = isPlaying ? "PauseButton" : "PlayButton";
+            playPauseButton.style.backgroundImage =
+                EditorGUIUtility.IconContent(iconName).image as Texture2D;
+            playPauseButton.tooltip = isPlaying ? "Pause" : "Play";
         }
 
         private void UpdatePlayback()
@@ -381,8 +453,7 @@ namespace SpriteAnimationEditor
             long totalMilliseconds = TotalMilliseconds(asset);
             if (totalMilliseconds <= 0)
             {
-                isPlaying = false;
-                playButton.text = "Play";
+                SetPlaying(false);
                 return;
             }
 
@@ -397,8 +468,7 @@ namespace SpriteAnimationEditor
             else if (previewMilliseconds >= totalMilliseconds)
             {
                 previewMilliseconds = totalMilliseconds - 1;
-                isPlaying = false;
-                playButton.text = "Play";
+                SetPlaying(false);
             }
 
             RefreshPreviewImage();
@@ -406,6 +476,7 @@ namespace SpriteAnimationEditor
 
         private void PreviousFrame()
         {
+            SetPlaying(false);
             SpriteAnimationAsset asset = (SpriteAnimationAsset)target;
             int current = FrameIndexAtMilliseconds(asset, previewMilliseconds);
             if (current < 0)
@@ -425,6 +496,7 @@ namespace SpriteAnimationEditor
 
         private void NextFrame()
         {
+            SetPlaying(false);
             SpriteAnimationAsset asset = (SpriteAnimationAsset)target;
             int current = FrameIndexAtMilliseconds(asset, previewMilliseconds);
             if (current < 0)
@@ -470,16 +542,26 @@ namespace SpriteAnimationEditor
                 previewImage.sprite = null;
                 previewStatus.text = "No frames";
                 previewSlider.SetValueWithoutNotify(0);
+                previewSlider.SetEnabled(false);
+                SetPreviewControlsEnabled(false);
                 return;
             }
 
             previewImage.sprite = asset.Frames[frameIndex].Sprite;
+            previewSlider.SetEnabled(true);
+            SetPreviewControlsEnabled(true);
             int sliderMilliseconds = (int)Math.Min(Math.Floor(previewMilliseconds), int.MaxValue);
             previewSlider.SetValueWithoutNotify(sliderMilliseconds);
-            float seconds = sliderMilliseconds / 1000f;
             previewStatus.text =
-                $"Frame {frameIndex + 1}/{asset.Frames.Count}  •  " +
-                $"{sliderMilliseconds}/{totalMilliseconds} ms  •  {seconds:0.###}s";
+                $"Frame {frameIndex + 1}/{asset.Frames.Count}   " +
+                $"{sliderMilliseconds}/{totalMilliseconds} ms";
+        }
+
+        private void SetPreviewControlsEnabled(bool enabled)
+        {
+            previousFrameButton?.SetEnabled(enabled);
+            playPauseButton?.SetEnabled(enabled);
+            nextFrameButton?.SetEnabled(enabled);
         }
 
         private static long TotalMilliseconds(SpriteAnimationAsset asset)
@@ -583,7 +665,11 @@ namespace SpriteAnimationEditor
                 });
                 Add(spriteField);
 
-                durationField = new IntegerField("Duration (ms)") { isDelayed = true };
+                durationField = new IntegerField
+                {
+                    isDelayed = true,
+                    tooltip = "Duration (ms)",
+                };
                 durationField.AddToClassList("sprite-animation-frame-duration-field");
                 durationField.RegisterValueChangedCallback(_ => this.onValueChanged());
                 Add(durationField);

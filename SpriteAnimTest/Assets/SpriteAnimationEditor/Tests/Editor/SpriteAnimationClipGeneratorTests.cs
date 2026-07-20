@@ -182,6 +182,36 @@ namespace SpriteAnimationEditor.Tests
         }
 
         [Test]
+        public void Generate_SkipsInvalidAnimationAndGeneratesValidAnimation()
+        {
+            SpriteAnimationAsset valid = CreateAnimation(
+                testRoot,
+                "Idle",
+                true,
+                (firstSprite, 100));
+            SpriteAnimationAsset invalid = CreateAnimation(
+                testRoot,
+                "Empty",
+                false);
+            SpriteAnimationGroupAsset group = CreateGroup(
+                testRoot,
+                "Character",
+                testRoot,
+                string.Empty,
+                valid,
+                invalid);
+
+            SpriteAnimationGenerationReport report = SpriteAnimationClipGenerator.Generate(group);
+
+            Assert.That(report.Succeeded, Is.True, Messages(report));
+            Assert.That(report.Results, Has.Count.EqualTo(1));
+            Assert.That(report.Messages.Count(message =>
+                message.Severity == SpriteAnimationGenerationMessageSeverity.Warning), Is.EqualTo(1));
+            Assert.That(AssetDatabase.LoadAssetAtPath<AnimationClip>(testRoot + "/Idle.anim"), Is.Not.Null);
+            Assert.That(AssetDatabase.LoadAssetAtPath<AnimationClip>(testRoot + "/Empty.anim"), Is.Null);
+        }
+
+        [Test]
         public void Generate_WhenSelectedGroupsShareOutputPath_ChangesNothing()
         {
             AssetDatabase.CreateFolder(testRoot, "SourceA");

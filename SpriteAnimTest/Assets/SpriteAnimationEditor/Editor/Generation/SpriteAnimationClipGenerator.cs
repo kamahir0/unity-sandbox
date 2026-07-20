@@ -33,6 +33,7 @@ namespace SpriteAnimationEditor
             IReadOnlyList<SpriteAnimationGroupAsset> groups)
         {
             List<GenerationOperation> operations = BuildPlan(groups, out SpriteAnimationGenerationReport report);
+            LogSkippedAnimations(report);
             if (!report.Succeeded)
             {
                 return report;
@@ -244,7 +245,16 @@ namespace SpriteAnimationEditor
                         continue;
                     }
 
-                    ValidateSource(source, group, report);
+                    if (!TryValidateSource(source, out string skipReason))
+                    {
+                        report.AddMessage(
+                            SpriteAnimationGenerationMessageSeverity.Warning,
+                            $"Skipped animation '{source.name}': {skipReason}",
+                            group,
+                            source);
+                        continue;
+                    }
+
                     if (!outputFolderValid)
                     {
                         continue;
@@ -280,52 +290,36 @@ namespace SpriteAnimationEditor
             return operations;
         }
 
-        private static void ValidateSource(
+        private static bool TryValidateSource(
             SpriteAnimationAsset source,
-            SpriteAnimationGroupAsset group,
-            SpriteAnimationGenerationReport report)
+            out string reason)
         {
             IReadOnlyList<SpriteAnimationFrame> frames = source.Frames;
             if (frames == null || frames.Count == 0)
             {
-                report.AddMessage(
-                    SpriteAnimationGenerationMessageSeverity.Error,
-                    "The animation contains no frames.",
-                    group,
-                    source);
-                return;
+                reason = "The animation contains no frames.";
+                return false;
             }
 
+            var errors = new List<string>();
             long totalMilliseconds = 0;
             for (var frameIndex = 0; frameIndex < frames.Count; frameIndex++)
             {
                 SpriteAnimationFrame frame = frames[frameIndex];
                 if (frame == null)
                 {
-                    report.AddMessage(
-                        SpriteAnimationGenerationMessageSeverity.Error,
-                        $"Frame {frameIndex} is null.",
-                        group,
-                        source);
+                    errors.Add($"Frame {frameIndex} is null.");
                     continue;
                 }
 
                 if (frame.Sprite == null)
                 {
-                    report.AddMessage(
-                        SpriteAnimationGenerationMessageSeverity.Error,
-                        $"Frame {frameIndex} has no Sprite.",
-                        group,
-                        source);
+                    errors.Add($"Frame {frameIndex} has no Sprite.");
                 }
 
                 if (frame.DurationMilliseconds < 1)
                 {
-                    report.AddMessage(
-                        SpriteAnimationGenerationMessageSeverity.Error,
-                        $"Frame {frameIndex} Duration Milliseconds must be at least 1.",
-                        group,
-                        source);
+                    errors.Add($"Frame {frameIndex} Duration Milliseconds must be at least 1.");
                 }
                 else
                 {
@@ -336,11 +330,20 @@ namespace SpriteAnimationEditor
             if (!float.IsFinite(totalMilliseconds / MillisecondsPerSecond) ||
                 totalMilliseconds <= 0)
             {
-                report.AddMessage(
-                    SpriteAnimationGenerationMessageSeverity.Error,
-                    "The animation duration is invalid or too large.",
-                    group,
-                    source);
+                errors.Add("The animation duration is invalid or too large.");
+            }
+
+            reason = string.Join(" ", errors);
+            return errors.Count == 0;
+        }
+
+        private static void LogSkippedAnimations(SpriteAnimationGenerationReport report)
+        {
+            foreach (SpriteAnimationGenerationMessage message in report.Messages.Where(message =>
+                         message.Severity == SpriteAnimationGenerationMessageSeverity.Warning))
+            {
+                UnityEngine.Object context = message.Source != null ? message.Source : message.Group;
+                Debug.LogWarning(message.Text, context);
             }
         }
 

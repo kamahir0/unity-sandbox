@@ -14,14 +14,19 @@ namespace SpriteAnimationEditor
 
             if (!string.IsNullOrEmpty(ussFileName))
             {
-                StyleSheet style = AssetDatabase.LoadAssetAtPath<StyleSheet>(UiRoot + ussFileName);
-                if (style != null)
-                {
-                    root.styleSheets.Add(style);
-                }
+                AddStyleSheet(root, ussFileName);
             }
 
             return root;
+        }
+
+        public static void AddStyleSheet(VisualElement root, string ussFileName)
+        {
+            StyleSheet style = AssetDatabase.LoadAssetAtPath<StyleSheet>(UiRoot + ussFileName);
+            if (style != null)
+            {
+                root.styleSheets.Add(style);
+            }
         }
     }
 }

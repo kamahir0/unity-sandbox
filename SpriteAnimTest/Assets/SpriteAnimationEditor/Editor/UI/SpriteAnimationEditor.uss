@@ -92,35 +92,40 @@
 }
 
 .sprite-animation-frame-duration-field {
-    width: 90px;
+    width: 72px;
 }
 
-.sprite-animation-preview-container {
-    min-height: 230px;
-    border-width: 1px;
-    border-color: rgba(128, 128, 128, 0.35);
-    padding: 4px;
+.sprite-animation-standard-preview {
+    flex-grow: 1;
+    min-height: 120px;
 }
 
 .sprite-animation-preview-image {
     flex-grow: 1;
-    min-height: 160px;
-    margin-bottom: 4px;
+    min-height: 80px;
+    margin: 6px;
+    background-color: rgba(0, 0, 0, 0.16);
 }
 
-.sprite-animation-preview-controls {
+.sprite-animation-preview-footer {
     flex-direction: row;
     align-items: center;
+    min-height: 22px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-bottom: 4px;
 }
 
 .sprite-animation-preview-slider {
     flex-grow: 1;
-    margin-left: 4px;
+    min-width: 80px;
 }
 
 .sprite-animation-preview-status {
-    -unity-text-align: middle-center;
-    margin-top: 3px;
+    min-width: 150px;
+    margin-left: 8px;
+    -unity-text-align: middle-right;
+    color: rgba(210, 210, 210, 0.85);
 }
 
 .sprite-animation-generate-group-button {
