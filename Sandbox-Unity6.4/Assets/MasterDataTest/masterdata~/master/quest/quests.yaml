@@ -12,18 +12,34 @@ keys:
 fields:
   - name: Id
     type: int
+    fixedIndex: 0
   - name: Chapter
     type: int
+    fixedIndex: 1
   - name: Number
     type: int
+    fixedIndex: 2
   - name: Title
     type: string
+    fixedIndex: 3
   - name: RequiredItemId
     type: int
+    fixedIndex: 4
   - name: MainRewardId
     type: int
+    fixedIndex: 5
   - name: RewardIds
-    type: list<int>
+    type: int[]
+    fixedIndex: 6
+  - name: IsMainStory
+    type: bool
+    fixedIndex: 7
+  - name: UnlockFeatures
+    type: ItemFeature
+    fixedIndex: 8
+  - name: Condition
+    type: QuestCondition
+    fixedIndex: 9
 
 refs:
   - name: RequiredItem
@@ -57,6 +73,16 @@ rows:
       RequiredItemId: 1001
       MainRewardId: 1
       RewardIds: [1, 2]
+      IsMainStory: true
+      UnlockFeatures: Stackable
+      Condition:
+        RequiredLevel: 1
+        RequiresPremium: false
+        MinimumRarity: Common
+        RequiredFeatures: Stackable
+        DifficultyMultiplier: 1.0
+        Hint: Bring a potion to the first NPC.
+        Labels: [tutorial, delivery]
   - data:
       Id: 102
       Chapter: 1
@@ -65,3 +91,33 @@ rows:
       RequiredItemId: 2001
       MainRewardId: 3
       RewardIds: [3]
+      IsMainStory: true
+      UnlockFeatures: Sellable
+      Condition:
+        RequiredLevel: 3
+        RequiresPremium: false
+        MinimumRarity: Rare
+        RequiredFeatures: Sellable
+        DifficultyMultiplier: 1.5
+        Hint: Equip a weapon before starting.
+        Labels: [combat]
+  - data:
+      Id: 901
+      Chapter: 9
+      Number: 1
+      Title: Debug Quest
+      RequiredItemId: 9001
+      MainRewardId: 9001
+      RewardIds: [9001]
+      IsMainStory: false
+      UnlockFeatures: Sellable, QuestOnly
+      Condition:
+        RequiredLevel: 99
+        RequiresPremium: true
+        MinimumRarity: Epic
+        RequiredFeatures: QuestOnly
+        DifficultyMultiplier: 9.0
+        Hint: Dev-only quest.
+        Labels: [debug]
+    meta:
+      tags: [dev]

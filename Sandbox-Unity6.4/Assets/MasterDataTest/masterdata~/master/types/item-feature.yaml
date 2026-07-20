@@ -1,0 +1,12 @@
+kind: enum
+name: ItemFeature
+flags: true
+members:
+  - name: Stackable
+    value: 1
+  - name: Sellable
+    value: 2
+  - name: QuestOnly
+    value: 4
+  - name: CraftingMaterial
+    value: 8

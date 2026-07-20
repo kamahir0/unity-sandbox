@@ -1,0 +1,24 @@
+kind: struct
+name: QuestCondition
+fields:
+  - name: RequiredLevel
+    type: int
+    fixedIndex: 0
+  - name: RequiresPremium
+    type: bool
+    fixedIndex: 1
+  - name: MinimumRarity
+    type: ItemRarity
+    fixedIndex: 2
+  - name: RequiredFeatures
+    type: ItemFeature
+    fixedIndex: 3
+  - name: DifficultyMultiplier
+    type: double
+    fixedIndex: 4
+  - name: Hint
+    type: string
+    fixedIndex: 5
+  - name: Labels
+    type: string[]
+    fixedIndex: 6

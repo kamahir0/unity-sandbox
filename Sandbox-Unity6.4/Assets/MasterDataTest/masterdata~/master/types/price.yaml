@@ -1,7 +1,30 @@
 kind: struct
 name: Price
 fields:
-  - name: Amount
-    type: int
-  - name: Currency
-    type: string
+- name: Amount
+  type: int
+  fixedIndex: 0
+- name: Currency
+  type: Currency
+  fixedIndex: 1
+- name: Taxable
+  type: bool
+  fixedIndex: 2
+- name: DiscountRate
+  type: float
+  fixedIndex: 3
+- name: WeightMultiplier
+  type: double
+  fixedIndex: 4
+- name: SuggestedRarity
+  type: ItemRarity
+  fixedIndex: 5
+- name: Features
+  type: ItemFeature
+  fixedIndex: 6
+- name: Memo
+  type: string
+  fixedIndex: 7
+- name: Labels
+  type: string[]
+  fixedIndex: 8

@@ -1,0 +1,9 @@
+kind: enum
+name: ItemRarity
+members:
+  - name: Common
+    value: 0
+  - name: Rare
+    value: 1
+  - name: Epic
+    value: 2

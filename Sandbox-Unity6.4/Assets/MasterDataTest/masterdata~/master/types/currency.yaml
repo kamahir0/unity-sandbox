@@ -1,0 +1,11 @@
+kind: enum
+name: Currency
+members:
+  - name: None
+    value: 0
+  - name: Gold
+    value: 1
+  - name: Gem
+    value: 2
+  - name: EventPoint
+    value: 3

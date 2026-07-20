@@ -22,7 +22,9 @@ buildProfiles:
   dev:
     includeTags:
       - dev
-    excludeTags: []
+      - untagged
+    excludeTags:
+      - test
   production:
     includeTags: []
     excludeTags:

@@ -8,14 +8,34 @@ keys:
   secondary:
     - fields: [ItemId]
       unique: false
+    - fields: [Quality]
+      unique: false
 
 fields:
   - name: Id
     type: int
+    fixedIndex: 0
   - name: ItemId
     type: int
+    fixedIndex: 1
   - name: Count
     type: int
+    fixedIndex: 2
+  - name: Guaranteed
+    type: bool
+    fixedIndex: 3
+  - name: Quality
+    type: ItemRarity
+    fixedIndex: 4
+  - name: BonusFeatures
+    type: ItemFeature
+    fixedIndex: 5
+  - name: Multiplier
+    type: double
+    fixedIndex: 6
+  - name: Note
+    type: string
+    fixedIndex: 7
 
 refs:
   - name: Item
@@ -27,12 +47,41 @@ refs:
         target: Id
 
 rows:
-  - Id: 1
-    ItemId: 1001
-    Count: 3
-  - Id: 2
-    ItemId: 3001
-    Count: 15
-  - Id: 3
-    ItemId: 2001
-    Count: 1
+  - data:
+      Id: 1
+      ItemId: 1001
+      Count: 3
+      Guaranteed: true
+      Quality: Common
+      BonusFeatures: Stackable
+      Multiplier: 1.0
+      Note: Potion bundle
+  - data:
+      Id: 2
+      ItemId: 3001
+      Count: 15
+      Guaranteed: false
+      Quality: Common
+      BonusFeatures: Stackable, CraftingMaterial
+      Multiplier: 1.25
+      Note: Material bonus
+  - data:
+      Id: 3
+      ItemId: 2001
+      Count: 1
+      Guaranteed: true
+      Quality: Rare
+      BonusFeatures: Sellable
+      Multiplier: 1.5
+      Note: Weapon reward
+  - data:
+      Id: 9001
+      ItemId: 9001
+      Count: 1
+      Guaranteed: true
+      Quality: Epic
+      BonusFeatures: Sellable, QuestOnly
+      Multiplier: 9.0
+      Note: Dev-only reward
+    meta:
+      tags: [dev]

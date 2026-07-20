@@ -12,6 +12,9 @@ keys:
   - fields:
     - Code
     unique: true
+  - fields:
+    - Rarity
+    unique: false
 fields:
 - name: Id
   type: int
@@ -22,125 +25,209 @@ fields:
 - name: Type
   type: ItemType
   fixedIndex: 2
+- name: Rarity
+  type: ItemRarity
+  fixedIndex: 3
+- name: Features
+  type: ItemFeature
+  fixedIndex: 4
+- name: IsTradable
+  type: bool
+  fixedIndex: 6
+- name: MaxStack
+  type: int
+  fixedIndex: 7
+- name: SortOrder
+  type: long
+  fixedIndex: 8
+- name: Weight
+  type: double
+  fixedIndex: 9
+- name: DropRate
+  type: float
+  fixedIndex: 10
+- name: Tags
+  type: string[]
+  fixedIndex: 11
 - name: Price
   type: Price
-  fixedIndex: 3
-- name: Field5
-  type: string
-  fixedIndex: 4
+  fixedIndex: 5
+- name: Field13
+  type: Price[]
+  fixedIndex: 12
 refs: []
 rows:
 - data:
     Code: potion
-    Field5: ''
+    DropRate: 0.75
+    Features: Stackable, Sellable
+    Field13:
+    - Amount: 5
+      Currency: Gold
+      DiscountRate: 0
+      Features: Stackable
+      Labels:
+      - bonus
+      Memo: Bundle bonus
+      SuggestedRarity: Common
+      Taxable: true
+      WeightMultiplier: 1
     Id: 1001
+    IsTradable: true
+    MaxStack: 99
     Price:
       Amount: 50
-      Currency: gold
+      Currency: Gold
+      DiscountRate: 0.05
+      Features: Stackable, Sellable
+      Labels:
+      - shop
+      - healing
+      Memo: Base shop consumable
+      SuggestedRarity: Common
+      Taxable: true
+      WeightMultiplier: 1
+    Rarity: Common
+    SortOrder: 10000000001
+    Tags:
+    - shop
+    - healing
     Type: Consumable
+    Weight: 0.1
 - data:
     Code: iron_sword
-    Field5: ''
+    DropRate: 0.2
+    Features: Sellable
+    Field13: []
     Id: 2001
+    IsTradable: true
+    MaxStack: 1
     Price:
       Amount: 300
-      Currency: gold
+      Currency: Gold
+      DiscountRate: 0
+      Features: Sellable
+      Labels:
+      - shop
+      - weapon
+      Memo: Starter weapon
+      SuggestedRarity: Rare
+      Taxable: true
+      WeightMultiplier: 1.25
+    Rarity: Rare
+    SortOrder: 20000000001
+    Tags:
+    - shop
+    - weapon
     Type: Weapon
+    Weight: 3.5
 - data:
     Code: iron_ore
-    Field5: ''
+    DropRate: 0.9
+    Features: Stackable, Sellable, CraftingMaterial
+    Field13: []
     Id: 3001
+    IsTradable: true
+    MaxStack: 999
     Price:
       Amount: 10
-      Currency: gold
+      Currency: Gold
+      DiscountRate: 0
+      Features: Stackable, CraftingMaterial
+      Labels:
+      - material
+      - crafting
+      Memo: Crafting ingredient
+      SuggestedRarity: Common
+      Taxable: false
+      WeightMultiplier: 0.8
+    Rarity: Common
+    SortOrder: 30000000001
+    Tags:
+    - crafting
+    - material
     Type: Material
+    Weight: 0.3
 - data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
+    Code: sealed_letter
+    DropRate: 0
+    Features: QuestOnly
+    Field13: []
+    Id: 4001
+    IsTradable: false
+    MaxStack: 1
+    Price:
+      Amount: 0
+      Currency: None
+      DiscountRate: 0
+      Features: QuestOnly
+      Labels:
+      - quest
+      Memo: Quest-only key item
+      SuggestedRarity: Epic
+      Taxable: false
+      WeightMultiplier: 1
+    Rarity: Epic
+    SortOrder: 40000000001
+    Tags:
+    - quest
+    Type: Quest
+    Weight: 0
 - data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
+    Code: debug_sword
+    DropRate: 1
+    Features: Sellable, QuestOnly
+    Field13: []
+    Id: 9001
+    IsTradable: false
+    MaxStack: 1
+    Price:
+      Amount: 1
+      Currency: Gem
+      DiscountRate: 1
+      Features: Sellable, QuestOnly
+      Labels:
+      - debug
+      - weapon
+      Memo: Dev-only test item
+      SuggestedRarity: Epic
+      Taxable: false
+      WeightMultiplier: 0.1
+    Rarity: Epic
+    SortOrder: 90000000001
+    Tags:
+    - debug
+    - weapon
+    Type: Weapon
+    Weight: 0.01
+  meta:
+    tags:
+    - dev
 - data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
-- data:
-    Code: ''
-    Field5: ''
-    Id: 0
-    Price: ''
-    Type: ''
+    Code: test_coupon
+    DropRate: 1
+    Features: Stackable
+    Field13: []
+    Id: 9101
+    IsTradable: false
+    MaxStack: 10
+    Price:
+      Amount: 5
+      Currency: EventPoint
+      DiscountRate: 0.5
+      Features: Stackable
+      Labels:
+      - test
+      Memo: Test profile row
+      SuggestedRarity: Rare
+      Taxable: false
+      WeightMultiplier: 1
+    Rarity: Rare
+    SortOrder: 91000000001
+    Tags:
+    - test
+    Type: Consumable
+    Weight: 0
+  meta:
+    tags:
+    - test

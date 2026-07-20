@@ -1,6 +1,11 @@
 kind: enum
 name: ItemType
 members:
-  - Consumable
-  - Material
-  - Weapon
+  - name: Consumable
+    value: 0
+  - name: Material
+    value: 1
+  - name: Weapon
+    value: 2
+  - name: Quest
+    value: 3
