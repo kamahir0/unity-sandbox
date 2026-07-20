@@ -1,0 +1,4 @@
+interface:
+  display_name: "Unity Editor Extensions"
+  short_description: "Build native-feeling Unity Editor extensions"
+  default_prompt: "Use $build-unity-editor-extensions to build a Unity Editor extension with native Unity appearance and behavior."
