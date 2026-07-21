@@ -718,6 +718,11 @@ namespace SpriteAnimationEditor.Tests
             Assert.That(frameOptionsMenu.worldBound.xMax,
                 Is.LessThanOrEqualTo(frameCountField.worldBound.xMin + tolerance),
                 $"Frame count and options overlap at {width}px.");
+            Assert.That(frameOptionsMenu.resolvedStyle.borderLeftWidth, Is.Zero);
+            Assert.That(frameOptionsMenu.resolvedStyle.borderRightWidth, Is.Zero);
+            Assert.That(frameOptionsMenu.resolvedStyle.borderTopWidth, Is.Zero);
+            Assert.That(frameOptionsMenu.resolvedStyle.borderBottomWidth, Is.Zero);
+            Assert.That(frameOptionsMenu.resolvedStyle.backgroundColor.a, Is.Zero);
             Assert.That(frameCountField.worldBound.xMax,
                 Is.LessThanOrEqualTo(list.worldBound.xMax + tolerance));
 
