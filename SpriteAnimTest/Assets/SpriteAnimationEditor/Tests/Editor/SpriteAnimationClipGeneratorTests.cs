@@ -354,6 +354,7 @@ namespace SpriteAnimationEditor.Tests
                     TextInputBaseField<int>.textInputUssName);
                 Assert.That(durationText, Is.Not.Null);
                 Assert.That(durationField.textEdition.placeholder, Is.EqualTo("80"));
+                Assert.That(durationField.textEdition.hidePlaceholderOnFocus, Is.True);
                 Assert.That(durationTextInput.ClassListContains(
                     TextInputBaseField<int>.placeholderUssClassName), Is.True);
 

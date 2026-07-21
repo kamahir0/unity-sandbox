@@ -1009,7 +1009,7 @@ namespace SpriteAnimationEditor
                 durationOverrideToggle.tooltip = "Override Default Duration";
                 durationField.tooltip = "Leave empty to inherit Default Duration";
                 durationField.isDelayed = false;
-                durationField.textEdition.hidePlaceholderOnFocus = false;
+                durationField.textEdition.hidePlaceholderOnFocus = true;
                 durationTextInput = durationField.Q<VisualElement>(
                     TextInputBaseField<int>.textInputUssName);
                 durationTextElement = durationField.Q<TextElement>();
