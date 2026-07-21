@@ -159,33 +159,39 @@
     min-height: 0;
 }
 
-.sprite-animation-preview-image {
+.sprite-animation-preview-controls {
+    flex-shrink: 0;
+    height: 20px;
+    min-height: 20px;
+    max-height: 20px;
+    padding: 0;
+}
+
+.sprite-animation-preview-viewport {
     flex-grow: 1;
     min-height: 0;
-    margin: 6px;
     background-color: rgba(0, 0, 0, 0.16);
 }
 
-.sprite-animation-preview-footer {
-    flex-direction: row;
-    flex-shrink: 0;
-    align-items: center;
-    min-height: 22px;
-    padding-left: 6px;
-    padding-right: 6px;
-    padding-bottom: 4px;
-}
-
-.sprite-animation-preview-slider {
+.sprite-animation-preview-image {
     flex-grow: 1;
-    min-width: 80px;
+    min-height: 0;
 }
 
 .sprite-animation-preview-status {
-    min-width: 150px;
-    margin-left: 8px;
-    -unity-text-align: middle-right;
-    color: rgba(210, 210, 210, 0.85);
+    flex-shrink: 0;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 20px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-bottom: 2px;
+    -unity-text-align: middle-center;
+}
+
+.sprite-animation-preview-frame-status {
+    margin-left: 12px;
 }
 
 .sprite-animation-generate-group-button {

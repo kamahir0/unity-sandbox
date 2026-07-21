@@ -465,6 +465,298 @@ namespace SpriteAnimationEditor.Tests
         }
 
         [Test]
+        public void Inspector_PreviewUsesTimeScrubberAndStatusInsideViewport()
+        {
+            SpriteAnimationAsset source = CreateAnimation(
+                testRoot,
+                "InspectorPreview",
+                false,
+                (firstSprite, 80),
+                (secondSprite, 140));
+            SetDurationData(source, 80, (false, 80), (true, 140));
+            UnityEditor.Editor editor = UnityEditor.Editor.CreateEditor(source);
+
+            try
+            {
+                var previewWindow = new VisualElement();
+                var headerToolbar = new VisualElement { name = "toolbar" };
+                var content = new VisualElement { name = "content-container" };
+                previewWindow.Add(headerToolbar);
+                previewWindow.Add(content);
+
+                VisualElement result = editor.CreatePreview(previewWindow);
+                Assert.That(result, Is.SameAs(previewWindow));
+                Assert.That(headerToolbar.childCount, Is.Zero,
+                    "Transport controls should sit below the Preview header.");
+
+                VisualElement previewRoot =
+                    content.Q<VisualElement>("sprite-animation-preview");
+                IMGUIContainer controls = previewRoot?.Q<IMGUIContainer>(
+                    "sprite-animation-preview-controls");
+                VisualElement viewport = previewRoot?.Q<VisualElement>(
+                    "sprite-animation-preview-viewport");
+                Image image = viewport?.Q<Image>(
+                    className: "sprite-animation-preview-image");
+                VisualElement status = viewport?.Q<VisualElement>(
+                    "sprite-animation-preview-status");
+                Label timeStatus = status?.Q<Label>(
+                    "sprite-animation-preview-time");
+                Label frameStatus = status?.Q<Label>(
+                    "sprite-animation-preview-frame");
+
+                Assert.That(previewRoot, Is.Not.Null);
+                Assert.That(controls, Is.Not.Null);
+                Assert.That(controls.focusable, Is.False,
+                    "The native-style scrubber should not retain blue keyboard focus.");
+                Assert.That(controls.childCount, Is.Zero);
+                Assert.That(previewRoot[0], Is.SameAs(controls));
+                Assert.That(previewRoot[1], Is.SameAs(viewport));
+                Assert.That(viewport[0], Is.SameAs(image));
+                Assert.That(viewport[1], Is.SameAs(status));
+                Assert.That(status.childCount, Is.EqualTo(2));
+                Assert.That(status[0], Is.SameAs(timeStatus));
+                Assert.That(status[1], Is.SameAs(frameStatus));
+                Assert.That(timeStatus.text, Is.EqualTo("0:000"));
+                Assert.That(frameStatus.text, Is.EqualTo("Frame 1/2"));
+                Assert.That(previewRoot.Q<SliderInt>(), Is.Null,
+                    "A form slider does not match Unity's TimeScrubber preview UI.");
+
+                FieldInfo previewMilliseconds = editor.GetType().GetField(
+                    "previewMilliseconds",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                MethodInfo refreshPreviewImage = editor.GetType().GetMethod(
+                    "RefreshPreviewImage",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(previewMilliseconds, Is.Not.Null);
+                Assert.That(refreshPreviewImage, Is.Not.Null);
+                previewMilliseconds.SetValue(editor, 80d);
+                refreshPreviewImage.Invoke(editor, Array.Empty<object>());
+                Assert.That(timeStatus.text, Is.EqualTo("0:080"));
+                Assert.That(frameStatus.text, Is.EqualTo("Frame 2/2"));
+
+                MethodInfo calculateGeometry = editor.GetType().GetMethod(
+                    "CalculatePreviewControlsGeometry",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(calculateGeometry, Is.Not.Null);
+                FieldInfo nativeButtonStyleField = editor.GetType().GetField(
+                    "previewTimeScrubberButtonStyle",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                FieldInfo compactButtonStyleField = editor.GetType().GetField(
+                    "previewCompactScrubberButtonStyle",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                var nativeButtonStyle = new GUIStyle
+                {
+                    fixedWidth = 33f,
+                    border = new RectOffset(4, 4, 4, 4),
+                    padding = new RectOffset(5, 5, 0, 0),
+                };
+                var compactButtonStyle = new GUIStyle(nativeButtonStyle)
+                {
+                    fixedWidth = 0f,
+                };
+                nativeButtonStyleField.SetValue(editor, nativeButtonStyle);
+                compactButtonStyleField.SetValue(editor, compactButtonStyle);
+                GUIContent previousContent = EditorGUIUtility.TrIconContent(
+                    "Animation.PrevKey",
+                    "Previous Frame");
+                GUIContent playContent = EditorGUIUtility.TrIconContent(
+                    "PlayButton",
+                    "Play");
+                GUIContent nextContent = EditorGUIUtility.TrIconContent(
+                    "Animation.NextKey",
+                    "Next Frame");
+                var controlRow = new Rect(0f, 0f, 400f, 20f);
+                object geometry = calculateGeometry.Invoke(
+                    editor,
+                    new object[]
+                    {
+                        controlRow,
+                        previousContent,
+                        playContent,
+                        nextContent,
+                    });
+                Type geometryType = geometry.GetType();
+                FieldInfo previousRectField = geometryType.GetField(
+                    "PreviousButtonRect");
+                FieldInfo playRectField = geometryType.GetField("PlayButtonRect");
+                FieldInfo nextRectField = geometryType.GetField("NextButtonRect");
+                FieldInfo scrubberRectField = geometryType.GetField("ScrubberRect");
+                FieldInfo separationField = geometryType.GetField(
+                    "ScrubberSeparation");
+                MethodInfo normalizedTimeAt = geometryType.GetMethod(
+                    "NormalizedTimeAt");
+                MethodInfo playheadRectAt = geometryType.GetMethod("PlayheadRect");
+                Assert.That(previousRectField, Is.Not.Null);
+                Assert.That(playRectField, Is.Not.Null);
+                Assert.That(nextRectField, Is.Not.Null);
+                Assert.That(scrubberRectField, Is.Not.Null);
+                Assert.That(separationField, Is.Not.Null);
+                Assert.That(normalizedTimeAt, Is.Not.Null);
+                Assert.That(playheadRectAt, Is.Not.Null);
+
+                var previousRect = (Rect)previousRectField.GetValue(geometry);
+                var playRect = (Rect)playRectField.GetValue(geometry);
+                var nextRect = (Rect)nextRectField.GetValue(geometry);
+                var scrubberRect = (Rect)scrubberRectField.GetValue(geometry);
+                float separation = (float)separationField.GetValue(geometry);
+                Assert.That(playRect.width, Is.EqualTo(nativeButtonStyle.fixedWidth));
+                Assert.That(
+                    previousRect.width,
+                    Is.EqualTo(compactButtonStyle.CalcSize(previousContent).x));
+                Assert.That(
+                    nextRect.width,
+                    Is.EqualTo(compactButtonStyle.CalcSize(nextContent).x));
+                Assert.That(previousRect.xMax, Is.EqualTo(playRect.xMin));
+                Assert.That(playRect.xMax, Is.EqualTo(nextRect.xMin));
+                Assert.That(
+                    scrubberRect.xMin - nextRect.xMax,
+                    Is.EqualTo(separation));
+                Assert.That(
+                    separation,
+                    Is.EqualTo(
+                        compactButtonStyle.margin.right +
+                        compactButtonStyle.overflow.right));
+                Assert.That(
+                    ((Rect)playheadRectAt.Invoke(
+                        geometry,
+                        new object[] { 0f })).xMin,
+                    Is.EqualTo(nextRect.xMax + separation),
+                    "At zero time the playhead should meet the native button boundary without an artificial gap.");
+
+                MethodInfo setPreviewTimeFromPointer = editor.GetType().GetMethod(
+                    "SetPreviewTimeFromPointer",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(setPreviewTimeFromPointer, Is.Not.Null);
+                float pointerMiddle = (scrubberRect.xMin + scrubberRect.xMax) * 0.5f;
+                setPreviewTimeFromPointer.Invoke(
+                    editor,
+                    new[] { geometry, (object)pointerMiddle });
+                Assert.That(timeStatus.text, Is.EqualTo("0:109"));
+                Assert.That(frameStatus.text, Is.EqualTo("Frame 2/2"));
+
+                Assert.That(
+                    (double)normalizedTimeAt.Invoke(
+                        geometry,
+                        new object[] { scrubberRect.xMin - 100f }),
+                    Is.EqualTo(0d));
+                Assert.That(
+                    (double)normalizedTimeAt.Invoke(
+                        geometry,
+                        new object[] { scrubberRect.xMax + 100f }),
+                    Is.EqualTo(1d));
+
+                foreach (float normalized in new[]
+                         {
+                             -1f,
+                             0f,
+                             0.005f,
+                             0.5f,
+                             0.995f,
+                             1f,
+                             2f,
+                         })
+                {
+                    var playhead = (Rect)playheadRectAt.Invoke(
+                        geometry,
+                        new object[] { normalized });
+                    Assert.That(
+                        playhead.xMin,
+                        Is.GreaterThanOrEqualTo(scrubberRect.xMin));
+                    Assert.That(
+                        playhead.xMax,
+                        Is.LessThanOrEqualTo(scrubberRect.xMax));
+                    Assert.That(
+                        playhead.xMin,
+                        Is.GreaterThanOrEqualTo(nextRect.xMax + separation));
+                }
+
+                foreach (float rowWidth in new[] { 40f, 85f, 320f, 729f, 900f })
+                {
+                    var row = new Rect(7f, 3f, rowWidth, 20f);
+                    object widthGeometry = calculateGeometry.Invoke(
+                        editor,
+                        new object[]
+                        {
+                            row,
+                            previousContent,
+                            playContent,
+                            nextContent,
+                        });
+                    var widthPreviousRect = (Rect)previousRectField.GetValue(
+                        widthGeometry);
+                    var widthPlayRect = (Rect)playRectField.GetValue(
+                        widthGeometry);
+                    var widthNextRect = (Rect)nextRectField.GetValue(
+                        widthGeometry);
+                    var widthScrubberRect = (Rect)scrubberRectField.GetValue(
+                        widthGeometry);
+                    Assert.That(
+                        widthPreviousRect.xMax,
+                        Is.LessThanOrEqualTo(widthPlayRect.xMin));
+                    Assert.That(
+                        widthPlayRect.xMax,
+                        Is.LessThanOrEqualTo(widthNextRect.xMin));
+                    Assert.That(
+                        widthNextRect.xMax,
+                        Is.LessThanOrEqualTo(widthScrubberRect.xMin));
+                    foreach (FieldInfo rectField in new[]
+                             {
+                                 previousRectField,
+                                 playRectField,
+                                 nextRectField,
+                                 scrubberRectField,
+                             })
+                    {
+                        var rect = (Rect)rectField.GetValue(widthGeometry);
+                        Assert.That(rect.xMin, Is.GreaterThanOrEqualTo(row.xMin));
+                        Assert.That(rect.xMax, Is.LessThanOrEqualTo(row.xMax));
+                        Assert.That(rect.yMin, Is.EqualTo(row.yMin));
+                        Assert.That(rect.yMax, Is.EqualTo(row.yMax));
+                    }
+                }
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(editor);
+            }
+        }
+
+        [Test]
+        public void Inspector_EmptyPreviewShowsZeroTimeAndFrameCount()
+        {
+            SpriteAnimationAsset source = CreateAnimation(
+                testRoot,
+                "EmptyInspectorPreview",
+                false);
+            UnityEditor.Editor editor = UnityEditor.Editor.CreateEditor(source);
+
+            try
+            {
+                var previewWindow = new VisualElement();
+                previewWindow.Add(new VisualElement { name = "toolbar" });
+                previewWindow.Add(new VisualElement { name = "content-container" });
+
+                editor.CreatePreview(previewWindow);
+
+                Assert.That(
+                    previewWindow.Q<Label>("sprite-animation-preview-time").text,
+                    Is.EqualTo("0:000"));
+                Assert.That(
+                    previewWindow.Q<Label>("sprite-animation-preview-frame").text,
+                    Is.EqualTo("Frame 0/0"));
+                FieldInfo previewControlsEnabled = editor.GetType().GetField(
+                    "previewControlsEnabled",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(previewControlsEnabled, Is.Not.Null);
+                Assert.That(previewControlsEnabled.GetValue(editor), Is.False);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(editor);
+            }
+        }
+
+        [Test]
         public void Inspector_DefaultDurationToggleShowsMixedStateAndSupportsUndoRedo()
         {
             SpriteAnimationAsset source = CreateAnimation(

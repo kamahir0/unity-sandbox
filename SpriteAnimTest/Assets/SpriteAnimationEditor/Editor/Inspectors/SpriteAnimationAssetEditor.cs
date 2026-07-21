@@ -24,19 +24,24 @@ namespace SpriteAnimationEditor
         private Toggle defaultDurationToggle;
         private IntegerField defaultDurationField;
         private Image previewImage;
-        private Button previousFrameButton;
-        private Button playPauseButton;
-        private Button nextFrameButton;
-        private SliderInt previewSlider;
-        private Label previewStatus;
+        private IMGUIContainer previewControls;
+        private Label previewTimeStatus;
+        private Label previewFrameStatus;
         private IVisualElementScheduledItem previewSchedule;
         private bool isRebuildingFrames;
         private bool isRefreshingFrameCountField;
         private bool isRefreshingDurationControls;
+        private bool previewControlsEnabled;
         private int defaultDurationEditUndoGroup = -1;
         private bool isPlaying;
         private double lastPreviewTime;
         private double previewMilliseconds;
+        private GUIStyle previewTimeScrubberStyle;
+        private GUIStyle previewTimeScrubberButtonStyle;
+        private GUIStyle previewCompactScrubberButtonStyle;
+
+        private const float PreviewControlHeight = 20f;
+        private const float PreviewPlayheadWidth = 2f;
 
         private void OnEnable()
         {
@@ -93,8 +98,7 @@ namespace SpriteAnimationEditor
         public override VisualElement CreatePreview(VisualElement inspectorPreviewWindow)
         {
             VisualElement previewPane = inspectorPreviewWindow.Q("content-container");
-            VisualElement toolbar = inspectorPreviewWindow.Q("toolbar");
-            if (previewPane == null || toolbar == null)
+            if (previewPane == null)
             {
                 return null;
             }
@@ -105,25 +109,6 @@ namespace SpriteAnimationEditor
             previewPane.style.flexGrow = 1f;
             previewPane.style.minHeight = 0f;
 
-            previousFrameButton = CreatePreviewToolbarButton(
-                "sprite-animation-previous-frame",
-                "Animation.PrevKey",
-                "Previous Frame",
-                PreviousFrame);
-            playPauseButton = CreatePreviewToolbarButton(
-                "sprite-animation-play-pause",
-                "PlayButton",
-                "Play",
-                TogglePlayback);
-            nextFrameButton = CreatePreviewToolbarButton(
-                "sprite-animation-next-frame",
-                "Animation.NextKey",
-                "Next Frame",
-                NextFrame);
-            toolbar.Add(previousFrameButton);
-            toolbar.Add(playPauseButton);
-            toolbar.Add(nextFrameButton);
-
             var root = new VisualElement
             {
                 name = "sprite-animation-preview",
@@ -132,31 +117,46 @@ namespace SpriteAnimationEditor
             root.AddToClassList("sprite-animation-standard-preview");
             SpriteAnimationUiResources.AddStyleSheet(root, "SpriteAnimationEditor.uss");
 
+            previewControls = new IMGUIContainer(DrawPreviewControls)
+            {
+                name = "sprite-animation-preview-controls",
+                focusable = false,
+            };
+            previewControls.AddToClassList("sprite-animation-preview-controls");
+            root.Add(previewControls);
+
+            var viewport = new VisualElement
+            {
+                name = "sprite-animation-preview-viewport",
+            };
+            viewport.AddToClassList("sprite-animation-preview-viewport");
+
             previewImage = new Image
             {
                 scaleMode = ScaleMode.ScaleToFit,
                 pickingMode = PickingMode.Ignore,
             };
             previewImage.AddToClassList("sprite-animation-preview-image");
-            root.Add(previewImage);
+            viewport.Add(previewImage);
 
-            var footer = new VisualElement();
-            footer.AddToClassList("sprite-animation-preview-footer");
-
-            previewSlider = new SliderInt(0, 0);
-            previewSlider.AddToClassList("sprite-animation-preview-slider");
-            previewSlider.RegisterCallback<PointerDownEvent>(_ => SetPlaying(false));
-            previewSlider.RegisterValueChangedCallback(evt =>
+            var statusRow = new VisualElement
             {
-                previewMilliseconds = evt.newValue;
-                RefreshPreviewImage();
-            });
-            footer.Add(previewSlider);
-
-            previewStatus = new Label();
-            previewStatus.AddToClassList("sprite-animation-preview-status");
-            footer.Add(previewStatus);
-            root.Add(footer);
+                name = "sprite-animation-preview-status",
+            };
+            statusRow.AddToClassList("sprite-animation-preview-status");
+            previewTimeStatus = new Label
+            {
+                name = "sprite-animation-preview-time",
+            };
+            previewFrameStatus = new Label
+            {
+                name = "sprite-animation-preview-frame",
+            };
+            previewFrameStatus.AddToClassList("sprite-animation-preview-frame-status");
+            statusRow.Add(previewTimeStatus);
+            statusRow.Add(previewFrameStatus);
+            viewport.Add(statusRow);
+            root.Add(viewport);
             previewPane.Add(root);
 
             root.RegisterCallback<AttachToPanelEvent>(_ =>
@@ -186,20 +186,276 @@ namespace SpriteAnimationEditor
             return inspectorPreviewWindow;
         }
 
-        private static Button CreatePreviewToolbarButton(
-            string name,
-            string iconName,
-            string tooltip,
-            Action clicked)
+        private void DrawPreviewControls()
         {
-            var button = new Button(clicked)
+            Rect row = new Rect(
+                0f,
+                0f,
+                previewControls.contentRect.width,
+                PreviewControlHeight);
+            EnsurePreviewControlStyles();
+            GUI.Box(row, GUIContent.none, previewTimeScrubberStyle);
+
+            GUIContent previousContent = EditorGUIUtility.TrIconContent(
+                "Animation.PrevKey",
+                "Previous Frame");
+            GUIContent playContent = EditorGUIUtility.TrIconContent(
+                isPlaying ? "PauseButton" : "PlayButton",
+                isPlaying ? "Pause" : "Play");
+            GUIContent nextContent = EditorGUIUtility.TrIconContent(
+                "Animation.NextKey",
+                "Next Frame");
+            PreviewControlsGeometry geometry = CalculatePreviewControlsGeometry(
+                row,
+                previousContent,
+                playContent,
+                nextContent);
+
+            EditorGUI.BeginDisabledGroup(!previewControlsEnabled);
+            if (GUI.Button(
+                    geometry.PreviousButtonRect,
+                    previousContent,
+                    previewCompactScrubberButtonStyle))
             {
-                name = name,
-                tooltip = tooltip,
-            };
-            button.style.backgroundImage =
-                EditorGUIUtility.IconContent(iconName).image as Texture2D;
-            return button;
+                PreviousFrame();
+            }
+
+            bool nextPlaying = GUI.Toggle(
+                geometry.PlayButtonRect,
+                isPlaying,
+                playContent,
+                previewTimeScrubberButtonStyle);
+            if (nextPlaying != isPlaying)
+            {
+                SetPlaying(nextPlaying);
+            }
+
+            if (GUI.Button(
+                    geometry.NextButtonRect,
+                    nextContent,
+                    previewCompactScrubberButtonStyle))
+            {
+                NextFrame();
+            }
+
+            HandlePreviewScrubber(geometry);
+            DrawPreviewPlayhead(geometry);
+            EditorGUI.EndDisabledGroup();
+        }
+
+        private void EnsurePreviewControlStyles()
+        {
+            previewTimeScrubberStyle ??= new GUIStyle("TimeScrubber");
+            previewTimeScrubberButtonStyle ??= new GUIStyle("TimeScrubberButton");
+            previewCompactScrubberButtonStyle ??=
+                new GUIStyle(previewTimeScrubberButtonStyle)
+                {
+                    fixedWidth = 0f,
+                };
+        }
+
+        private PreviewControlsGeometry CalculatePreviewControlsGeometry(
+            Rect row,
+            GUIContent previousContent,
+            GUIContent playContent,
+            GUIContent nextContent)
+        {
+            EnsurePreviewControlStyles();
+            float previousWidth = previewCompactScrubberButtonStyle.CalcSize(
+                previousContent).x;
+            float playWidth = previewTimeScrubberButtonStyle.fixedWidth > 0f
+                ? previewTimeScrubberButtonStyle.fixedWidth
+                : previewTimeScrubberButtonStyle.CalcSize(playContent).x;
+            float nextWidth = previewCompactScrubberButtonStyle.CalcSize(
+                nextContent).x;
+
+            // Native scrubbers sit directly against their transport controls. Only
+            // preserve spacing that the active skin explicitly draws outside the
+            // button itself; clipping still guarantees that the playhead cannot
+            // enter the button rectangle.
+            float scrubberSeparation = Math.Max(
+                0f,
+                previewCompactScrubberButtonStyle.margin.right +
+                previewCompactScrubberButtonStyle.overflow.right);
+            return new PreviewControlsGeometry(
+                row,
+                previousWidth,
+                playWidth,
+                nextWidth,
+                scrubberSeparation,
+                PreviewPlayheadWidth);
+        }
+
+        private void HandlePreviewScrubber(PreviewControlsGeometry geometry)
+        {
+            if (!previewControlsEnabled || !geometry.HasScrubber)
+            {
+                return;
+            }
+
+            Event current = Event.current;
+            int controlId = GUIUtility.GetControlID(
+                "SpriteAnimationPreviewScrubber".GetHashCode(),
+                FocusType.Passive,
+                geometry.ScrubberRect);
+            EventType eventType = current.GetTypeForControl(controlId);
+            if (eventType == EventType.MouseDown &&
+                current.button == 0 &&
+                geometry.ScrubberRect.Contains(current.mousePosition))
+            {
+                GUIUtility.hotControl = controlId;
+                SetPlaying(false);
+                SetPreviewTimeFromPointer(geometry, current.mousePosition.x);
+                current.Use();
+            }
+            else if (eventType == EventType.MouseDrag && GUIUtility.hotControl == controlId)
+            {
+                SetPreviewTimeFromPointer(geometry, current.mousePosition.x);
+                current.Use();
+            }
+            else if (eventType == EventType.MouseUp && GUIUtility.hotControl == controlId)
+            {
+                GUIUtility.hotControl = 0;
+                SetPreviewTimeFromPointer(geometry, current.mousePosition.x);
+                current.Use();
+            }
+        }
+
+        private void SetPreviewTimeFromPointer(
+            PreviewControlsGeometry geometry,
+            float pointerX)
+        {
+            long totalMilliseconds = TotalMilliseconds((SpriteAnimationAsset)target);
+            double highValue = totalMilliseconds > 0 ? totalMilliseconds - 1d : 0d;
+            double normalized = geometry.NormalizedTimeAt(pointerX);
+            previewMilliseconds = normalized * highValue;
+            RefreshPreviewImage();
+        }
+
+        private void DrawPreviewPlayhead(PreviewControlsGeometry geometry)
+        {
+            if (!previewControlsEnabled || !geometry.HasScrubber)
+            {
+                return;
+            }
+
+            long totalMilliseconds = TotalMilliseconds((SpriteAnimationAsset)target);
+            double highValue = totalMilliseconds > 0 ? totalMilliseconds - 1d : 0d;
+            float normalized = highValue > 0d
+                ? Mathf.Clamp01((float)(previewMilliseconds / highValue))
+                : 0f;
+            Color playheadColor = EditorStyles.label.normal.textColor;
+            playheadColor.a *= 0.5f;
+            Rect absolutePlayhead = geometry.PlayheadRect(normalized);
+            Rect localPlayhead = absolutePlayhead;
+            localPlayhead.position -= geometry.ScrubberRect.position;
+            GUI.BeginClip(geometry.ScrubberRect);
+            try
+            {
+                EditorGUI.DrawRect(localPlayhead, playheadColor);
+            }
+            finally
+            {
+                GUI.EndClip();
+            }
+        }
+
+        private readonly struct PreviewControlsGeometry
+        {
+            public readonly Rect RowRect;
+            public readonly Rect PreviousButtonRect;
+            public readonly Rect PlayButtonRect;
+            public readonly Rect NextButtonRect;
+            public readonly Rect ScrubberRect;
+            public readonly float ScrubberSeparation;
+
+            private readonly float playheadWidth;
+            private readonly float playheadMinimumX;
+            private readonly float playheadMaximumX;
+
+            public bool HasScrubber => ScrubberRect.width > 0f;
+
+            public PreviewControlsGeometry(
+                Rect row,
+                float previousButtonWidth,
+                float playButtonWidth,
+                float nextButtonWidth,
+                float scrubberSeparation,
+                float requestedPlayheadWidth)
+            {
+                RowRect = row;
+                float cursor = row.xMin;
+                PreviousButtonRect = TakeHorizontalSpace(
+                    row,
+                    ref cursor,
+                    previousButtonWidth);
+                PlayButtonRect = TakeHorizontalSpace(
+                    row,
+                    ref cursor,
+                    playButtonWidth);
+                NextButtonRect = TakeHorizontalSpace(
+                    row,
+                    ref cursor,
+                    nextButtonWidth);
+
+                ScrubberSeparation = Math.Min(
+                    Math.Max(0f, scrubberSeparation),
+                    Math.Max(0f, row.xMax - cursor));
+                cursor += ScrubberSeparation;
+                ScrubberRect = new Rect(
+                    cursor,
+                    row.yMin,
+                    Math.Max(0f, row.xMax - cursor),
+                    row.height);
+
+                playheadWidth = Math.Min(
+                    Math.Max(0f, requestedPlayheadWidth),
+                    ScrubberRect.width);
+                float halfPlayheadWidth = playheadWidth * 0.5f;
+                playheadMinimumX = ScrubberRect.xMin + halfPlayheadWidth;
+                playheadMaximumX = Math.Max(
+                    playheadMinimumX,
+                    ScrubberRect.xMax - halfPlayheadWidth);
+            }
+
+            public double NormalizedTimeAt(float pointerX)
+            {
+                if (!HasScrubber || playheadMaximumX <= playheadMinimumX)
+                {
+                    return 0d;
+                }
+
+                return Mathf.InverseLerp(
+                    playheadMinimumX,
+                    playheadMaximumX,
+                    pointerX);
+            }
+
+            public Rect PlayheadRect(float normalized)
+            {
+                float centerX = Mathf.Lerp(
+                    playheadMinimumX,
+                    playheadMaximumX,
+                    Mathf.Clamp01(normalized));
+                return new Rect(
+                    centerX - playheadWidth * 0.5f,
+                    ScrubberRect.yMin,
+                    playheadWidth,
+                    ScrubberRect.height);
+            }
+
+            private static Rect TakeHorizontalSpace(
+                Rect row,
+                ref float cursor,
+                float requestedWidth)
+            {
+                float width = Math.Min(
+                    Math.Max(0f, requestedWidth),
+                    Math.Max(0f, row.xMax - cursor));
+                var result = new Rect(cursor, row.yMin, width, row.height);
+                cursor += width;
+                return result;
+            }
         }
 
         private void BuildDefaultDurationControls(VisualElement root)
@@ -733,21 +989,8 @@ namespace SpriteAnimationEditor
 
             isPlaying = value;
             lastPreviewTime = EditorApplication.timeSinceStartup;
-            UpdatePlayPauseButton();
+            previewControls?.MarkDirtyRepaint();
             Repaint();
-        }
-
-        private void UpdatePlayPauseButton()
-        {
-            if (playPauseButton == null)
-            {
-                return;
-            }
-
-            string iconName = isPlaying ? "PauseButton" : "PlayButton";
-            playPauseButton.style.backgroundImage =
-                EditorGUIUtility.IconContent(iconName).image as Texture2D;
-            playPauseButton.tooltip = isPlaying ? "Pause" : "Play";
         }
 
         private void UpdatePlayback()
@@ -824,18 +1067,16 @@ namespace SpriteAnimationEditor
 
         private void RefreshPreview()
         {
-            if (previewSlider == null)
+            if (previewControls == null || previewImage == null)
             {
                 return;
             }
 
             SpriteAnimationAsset asset = (SpriteAnimationAsset)target;
             long totalMilliseconds = TotalMilliseconds(asset);
-            int highValue = totalMilliseconds > 0
-                ? (int)Math.Min(totalMilliseconds - 1, int.MaxValue)
-                : 0;
-            previewSlider.lowValue = 0;
-            previewSlider.highValue = highValue;
+            double highValue = totalMilliseconds > 0
+                ? totalMilliseconds - 1d
+                : 0d;
             previewMilliseconds = Math.Max(0d, Math.Min(previewMilliseconds, highValue));
             RefreshPreviewImage();
         }
@@ -848,28 +1089,34 @@ namespace SpriteAnimationEditor
             if (frameIndex < 0)
             {
                 previewImage.sprite = null;
-                previewStatus.text = "No frames";
-                previewSlider.SetValueWithoutNotify(0);
-                previewSlider.SetEnabled(false);
+                previewTimeStatus.text = "0:000";
+                previewFrameStatus.text = "Frame 0/0";
                 SetPreviewControlsEnabled(false);
                 return;
             }
 
             previewImage.sprite = asset.Frames[frameIndex].Sprite;
-            previewSlider.SetEnabled(true);
             SetPreviewControlsEnabled(true);
             int sliderMilliseconds = (int)Math.Min(Math.Floor(previewMilliseconds), int.MaxValue);
-            previewSlider.SetValueWithoutNotify(sliderMilliseconds);
-            previewStatus.text =
-                $"Frame {frameIndex + 1}/{asset.Frames.Count}   " +
-                $"{sliderMilliseconds}/{totalMilliseconds} ms";
+            previewTimeStatus.text = FormatPreviewTime(sliderMilliseconds);
+            previewFrameStatus.text = FormattableString.Invariant(
+                $"Frame {frameIndex + 1}/{asset.Frames.Count}");
+            previewControls.MarkDirtyRepaint();
+        }
+
+        private static string FormatPreviewTime(double milliseconds)
+        {
+            long elapsedMilliseconds = (long)Math.Floor(Math.Max(0d, milliseconds));
+            long seconds = elapsedMilliseconds / 1000;
+            long millisecondsWithinSecond = elapsedMilliseconds % 1000;
+            return FormattableString.Invariant(
+                $"{seconds}:{millisecondsWithinSecond:000}");
         }
 
         private void SetPreviewControlsEnabled(bool enabled)
         {
-            previousFrameButton?.SetEnabled(enabled);
-            playPauseButton?.SetEnabled(enabled);
-            nextFrameButton?.SetEnabled(enabled);
+            previewControlsEnabled = enabled;
+            previewControls?.MarkDirtyRepaint();
         }
 
         private static long TotalMilliseconds(SpriteAnimationAsset asset)
