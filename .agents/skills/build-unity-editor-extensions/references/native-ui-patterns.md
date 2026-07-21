@@ -73,6 +73,22 @@ Additional guidance:
 - On reorder and sort, move or copy the whole logical row, not only the visually dominant property.
 - Refresh item-source indices after every structural mutation.
 
+### Icon-only header menu chrome
+
+An icon-only `ToolbarMenu` can retain a faint button background and border that looks out of place inside a Foldout header. Remove only its resting chrome with a custom USS class:
+
+```css
+.my-header-menu {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+```
+
+Keep this as a regular class rule rather than an inline background style, and do not override `.my-header-menu:hover`. This allows Unity's more-specific native hover rule to keep providing its theme-aware highlight. Verify the target Unity version because selector specificity and theme rules can change. Assert zero resolved border widths and zero resting background alpha in an attached layout test, then visually check hover and focus states.
+
 ### Custom collection size field
 
 If a custom list cannot safely use `showBoundCollectionSize`, reproduce the public standard size-field contract rather than inventing a new header control:
@@ -141,18 +157,12 @@ Use the Editor preview surface instead of drawing a preview-like box inside the 
 
 - Override `HasPreviewGUI()` and `GetPreviewTitle()`.
 - For UI Toolkit, implement `CreatePreview(VisualElement inspectorPreviewWindow)` when supported.
-- Query Unity's preview `toolbar` and `content-container`; add play, pause, and frame-step buttons to the toolbar.
-- Add controls with built-in icon names such as `PlayButton`, `PauseButton`, `Animation.PrevKey`, and `Animation.NextKey`.
+- Keep Unity's Preview header as a title row when matching the Animation Clip Inspector. Add a second `Toolbar` at the top of `content-container` for transport controls instead of placing play and frame-step buttons in the header toolbar.
+- Put previous, play/pause, and next buttons at the left of the control row. Let the timeline or scrubber consume the remaining width on the same row; use `flex-grow: 1` in UI Toolkit or calculate the remainder from the complete IMGUI row.
+- Use built-in icon names such as `PlayButton`, `PauseButton`, `Animation.PrevKey`, and `Animation.NextKey`. In UI Toolkit, put each texture in a 16px `Image` child rather than enlarging it as a button background. In IMGUI, pass the built-in `GUIContent` to the native button style.
 - Set preview content to `flex-grow: 1` and `min-height: 0`.
-- Set the image/viewport to grow, and keep the slider/status footer `flex-shrink: 0`, so resizing never creates unexplained empty space or hides controls.
+- Set the image/viewport to grow and do not add an outer image margin when matching Unity's edge-to-edge preview surface. Keep the control row and status `flex-shrink: 0`, so resizing never creates unexplained empty space or hides controls.
+- Unity's Animation Clip preview draws its status over the bottom of the preview surface. If overlaying could cover a small subject such as a Sprite, reserve a status row inside the same viewport/background instead of placing a separate footer outside the preview frame.
+- Adapt status information to the asset model instead of copying irrelevant Animation Clip data; a millisecond-based Sprite animation can use separate `seconds:milliseconds` and one-based `Frame current/total` labels.
+- Do not use a UI Toolkit `Slider`/`SliderInt` when exact Animation Clip scrubber fidelity is required. Its hierarchy, focus states, track, and thumb are structurally different. Use an `IMGUIContainer` with Unity's scrubber styles for the control row and keep the rest of the preview in UI Toolkit.
 - Pause scheduled playback on detach and disable transport controls when no valid frame exists.
-
-## Visual fidelity investigation
-
-When a control looks subtly wrong:
-
-1. Place the target extension beside Unity's standard equivalent.
-2. Inspect visual hierarchy, class lists, resolved styles, and `worldBound` values.
-3. Search installed package sources and Unity's public class-name constants before adding custom USS.
-4. Determine whether the difference comes from structure, built-in state, flex sizing, margin, or theme—not just color.
-5. Fix the highest-level cause and add a layout or state-transition test.

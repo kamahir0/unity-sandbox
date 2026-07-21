@@ -30,6 +30,16 @@ Do not imitate Unity UI with arbitrary pixels, unicode symbols, fixed theme colo
 
 For concrete implementation patterns, read [references/native-ui-patterns.md](references/native-ui-patterns.md) whenever the task involves UI Toolkit, custom fields, collections, previews, placeholder text, or responsive Inspector layout.
 
+When success depends on matching Unity's appearance or interaction, or when a visual fix starts turning into pixel nudging, read [references/visual-fidelity-debugging.md](references/visual-fidelity-debugging.md) before editing.
+
+## Solve fidelity problems structurally
+
+1. Classify the mismatch as structure, stock-control choice, skin/style state, focus, layout geometry, clipping, or serialized state.
+2. Define measurable invariants such as containment, adjacency, alignment, focus behavior, and state transitions before changing offsets.
+3. Use one authoritative layout result for drawing, hit testing, value conversion, and tests. Derive dimensions from the active Unity control or style.
+4. Validate exact boundary states in the real Editor: empty, disabled, focused, zero, near-zero, end, narrow, and wide as applicable.
+5. Add a pixel constant only when it represents an intentional design dimension that cannot be obtained from a public control, style, or resolved bound.
+
 ## Implement around serialized state
 
 - Use `SerializedObject` and `SerializedProperty` for Inspector data whenever possible.
@@ -69,6 +79,7 @@ Before handing off, confirm:
 - The implementation uses the highest available native abstraction.
 - Labels and value regions align with neighboring Unity fields.
 - Controls do not overflow their row or overlap at supported widths.
+- Visual fixes are backed by structural or geometric invariants rather than screenshot-specific offsets.
 - Styling uses Unity classes or theme-derived styles rather than Dark-theme constants.
 - UI callbacks cannot recursively mutate serialized state.
 - Undo/Redo restores both data and displayed UI.
